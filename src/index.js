@@ -25,7 +25,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Enable CORS for frontend
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  origin: process.env.FRONTEND_URL || 'https://teamflow-ai-zeta.vercel.app',
   credentials: true,
 }));
 

@@ -12,7 +12,8 @@ const Dashboard = () => {
       navigate('/login');
       return;
     }
-    fetch('http://localhost:3000/api/protected', {
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+    fetch(`${apiUrl}/api/protected`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {

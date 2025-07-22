@@ -25,7 +25,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch('http://localhost:3000/auth/login', {
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+      const res = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -43,7 +44,8 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:3000/auth/google';
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   return (
