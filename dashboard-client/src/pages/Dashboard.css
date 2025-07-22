@@ -54,4 +54,39 @@
 .user-info button:hover {
   background: #c0392b;
 }
+
+@media (max-width: 900px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  .dashboard-cards {
+    gap: 1rem;
+  }
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-cards {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  .card {
+    width: 95vw;
+    max-width: 340px;
+    padding: 1.2rem;
+    font-size: 1rem;
+  }
+  .dashboard-title {
+    font-size: 1.15rem;
+    margin-bottom: 1.2rem;
+  }
+  .user-info {
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.98rem;
+  }
+}
   

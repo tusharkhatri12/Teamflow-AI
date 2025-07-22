@@ -209,4 +209,36 @@
 }
 .signup-form .show-hide-btn:hover {
   color: #222;
+}
+
+@media (max-width: 600px) {
+  .signup-bg {
+    padding: 0.5rem;
+    min-height: 100vh;
+  }
+  .signup-form {
+    min-width: unset;
+    width: 100%;
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+    border-radius: 10px;
+  }
+  .signup-title {
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+  .signup-form input,
+  .country-select {
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+  }
+  .signup-btn-main, .google-btn {
+    font-size: 1rem;
+    padding: 0.8rem 0;
+  }
+  .signup-footer {
+    font-size: 0.95rem;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
 } 
