@@ -1,0 +1,503 @@
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: #000;
+    color: #fff;
+  }
+ 
+  
+  .hero {
+    padding: 12rem 3rem 5rem;
+    text-align: center;
+  }
+  
+  .hero h1 {
+    font-size: 9.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .features-section {
+    padding: 80px 40px;
+    background-color: #0a0a0a;
+    color: white;
+  }
+  
+  .features-heading {
+    text-align: center;
+    font-size: 2.8rem;
+    font-weight: 900;
+    margin-bottom: 70px;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 16px #000a;
+  }
+  
+  .feature-step {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 100px;
+    flex-wrap: wrap;
+    min-height: 340px;
+    gap: 32px;
+    border-radius: 24px;
+    background: linear-gradient(90deg, #111 60%, #181818 100%);
+    box-shadow: 0 4px 32px 0 #0004;
+    padding: 40px 32px;
+    position: relative;
+  }
+  
+  .feature-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: -40px;
+    height: 2px;
+    background: linear-gradient(90deg, #222 0%, #444 100%);
+    opacity: 0.3;
+    border-radius: 2px;
+  }
+  
+  .step-text {
+    flex: 1.2;
+    min-width: 320px;
+    padding-right: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .step-number {
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-size: 1.1rem;
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
+  }
+  
+  .step-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 10px 0 18px 0;
+    letter-spacing: 0.5px;
+  }
+  
+  .step-description {
+    font-size: 1.15rem;
+    color: #cccccc;
+    line-height: 1.7;
+    max-width: 700px;
+  }
+  
+  .step-illustration {
+    flex: 1;
+    min-width: 220px;
+    padding: 1.5rem 1rem 1.5rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+.step-illustration img {
+  max-width: 370px;
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: contain;
+  display: block;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px 0 #0006, 0 0 0 2px #222;
+  background: #181818;
+  padding: 12px;
+  transition: box-shadow 0.2s;
+}
+
+.step-illustration img:hover {
+  box-shadow: 0 8px 48px 0 #fff2, 0 0 0 2.5px #fff;
+}
+
+@media (max-width: 1100px) {
+  .feature-step {
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 8px;
+    min-height: 0;
+  }
+  .step-text {
+    padding-right: 0;
+    text-align: center;
+    align-items: center;
+  }
+  .step-illustration {
+    margin-top: 2rem;
+    padding: 0;
+  }
+  .step-illustration img {
+    max-width: 90vw;
+    max-height: 300px;
+  }
+}
+   
+  
+  .highlight {
+    color: white;
+    background: linear-gradient(90deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #ccc;
+  }
+  
+  .description {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    font-size: 1rem;
+    color: #aaa;
+  }
+  
+  .waitlist-btn {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 0.75rem 7.5rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .waitlist-btn.glow:hover {
+    background: #fff;
+    color: #000;
+    box-shadow: 0 0 20px #fff;
+  }
+  
+  .section {
+    padding: 6rem 3rem;
+    text-align: center;
+  }
+  
+  .section.alt {
+    background: #111;
+  }
+  
+  .section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+  .section#pricing h2 {
+    margin-bottom: 3.5rem;
+  }
+  
+  .cards {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .card {
+    background: #fff;
+    color: #000;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 280px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  }
+  
+  .problems-list {
+    list-style-type: disc;
+    text-align: left;
+    max-width: 700px;
+    margin: 0 auto;
+    padding-left: 1rem;
+    color: #ccc;
+    font-size: 1rem;
+  }
+  
+.pricing-cards {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.pricing-cards .plan-card {
+  background: #111;
+  border: 1.5px solid #222;
+  padding: 2.5rem 2rem;
+  border-radius: 18px;
+  width: 340px;
+  min-height: 420px;
+  color: #fff;
+  font-size: 1.1rem;
+  box-shadow: 0 0 18px 0 rgba(255,255,255,0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+
+.pricing-cards .plan-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1.2rem;
+  color: #bdbdbd;
+}
+
+.pricing-cards .plan-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.2rem 0 1.8rem 0;
+  color: #ccc;
+  text-align: left;
+  width: 100%;
+}
+
+.pricing-cards .plan-card ul li {
+  margin-bottom: 0.7rem;
+  padding-left: 1.2em;
+  position: relative;
+}
+
+.pricing-cards .plan-card ul li:before {
+  content: '\2713';
+  color: #fff;
+  position: absolute;
+  left: 0;
+  font-size: 1.1em;
+}
+
+.pricing-cards .plan-card button {
+  background: #fff;
+  color: #111;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-top: auto;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pricing-cards .plan-card button.glow {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 18px 0 #fff8, 0 2px 8px 0 #0004;
+}
+
+.pricing-cards .plan-card.popular {
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 32px 0 #fff4, 0 2px 12px 0 #0006;
+  z-index: 2;
+  width: 390px;
+  min-height: 480px;
+  transform: scale(1.07);
+}
+
+.pricing-cards .plan-card.popular h3 {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.pricing-cards .plan-card.popular::before {
+  content: 'MOST POPULAR';
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #111;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.3em 1.5em;
+  border-radius: 1.2em;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px 0 #0002;
+}
+
+@media (max-width: 1100px) {
+  .pricing-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+  .pricing-cards .plan-card,
+  .pricing-cards .plan-card.popular {
+    width: 95vw;
+    min-width: 0;
+    max-width: 420px;
+    margin-bottom: 2.5rem;
+    transform: none;
+  }
+  .pricing-cards .plan-card.popular {
+    min-height: 420px;
+  }
+}
+  
+  input[type="email"] {
+    padding: 0.75rem;
+    width: 300px;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+    border: none;
+  }
+  
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(60px) scale(0.98);
+    transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+    will-change: opacity, transform;
+  }
+  .scroll-reveal.revealed {
+    opacity: 1;
+    transform: none;
+  }
+  
+  .type-cursor {
+    display: inline-block;
+    width: 1ch;
+    color: #fff;
+    animation: blink 1s steps(1) infinite;
+    font-weight: 900;
+    font-size: inherit;
+  }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  
+  .waitlist-desc {
+    font-size: 1.15rem;
+    color: #ccc;
+    margin-bottom: 2.5rem;
+    margin-top: 0.5rem;
+  }
+
+.waitlist-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.waitlist-form input[type="email"] {
+  padding: 1.1rem 1.5rem;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  outline: none;
+  width: 320px;
+  background: #fff;
+  color: #111;
+  transition: box-shadow 0.2s;
+  box-shadow: 0 2px 12px 0 #0002;
+}
+
+.waitlist-form input[type="email"]:focus {
+  box-shadow: 0 4px 18px 0 #fff3;
+}
+
+.waitlist-form .waitlist-btn {
+  border-radius: 0 8px 8px 0;
+  border: 1.5px solid #fff;
+  border-left: none;
+  background: #111;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 1.1rem 2.5rem;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 2px 12px 0 #0002;
+}
+
+.waitlist-form .waitlist-btn.glow:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 20px #fff;
+}
+
+.footer-divider {
+  width: 100%;
+  height: 32px;
+  background: linear-gradient(180deg, rgba(17,17,17,0) 0%, #181818 80%, #111 100%);
+  margin: 0;
+  border: none;
+  display: block;
+}
+
+.footer {
+  background: #111;
+  padding: 2.5rem 0 1.2rem 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+.footer-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.trademark {
+  color: #888;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.footer-socials a {
+  color: #fff;
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.footer-socials a:hover {
+  color: #fff;
+  opacity: 1;
+}
+
+.footer-socials svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .waitlist-form {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .waitlist-form input[type="email"],
+  .waitlist-form .waitlist-btn {
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .footer-content {
+    padding: 0 1rem;
+  }
+}
+  
+  

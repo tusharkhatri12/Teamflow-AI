@@ -1,29 +1,60 @@
 const express = require('express');
-require('dotenv').config();
-const { storeMessage } = require('../services/summaryService');
-
 const router = express.Router();
+const axios = require('axios');
+const { saveStandup, summarizeText } = require('../services/summaryService');
+
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 
 router.post('/', async (req, res) => {
   const { type, challenge, event } = req.body;
 
-  // Slack URL verification
+  // Slack verification
   if (type === 'url_verification') {
     return res.status(200).json({ challenge });
   }
 
-  // Listen to messages
-  if (type === 'event_callback') {
-    if (event && event.type === 'message' && !event.subtype) {
-      const text = event.text;
-      const user = event.user;
+  // Only handle message events (not bot messages or edits)
+  if (type === 'event_callback' && event.type === 'message' && !event.subtype) {
+    const user = event.user;
+    const text = event.text;
+    const channel = event.channel;
 
-      storeMessage({ user, text, timestamp: Date.now() });
-      console.log('📥 Message stored:', text);
+    console.log(`📥 Message from ${user}: ${text}`);
+
+    if (text.toLowerCase().includes('/summarize')) {
+      console.log('📄 Summarize command triggered');
+      try {
+        const summary = await summarizeText();
+
+        await axios.post(
+          'https://slack.com/api/chat.postMessage',
+          {
+            channel: channel,
+            text: `:memo: *Conversation Summary:*\n${summary}`,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        console.log('✅ Posted summary to Slack');
+      } catch (err) {
+        console.error('❌ Failed to summarize:', err.message);
+      }
+    } else {
+      // Save normal messages for standup
+      try {
+        saveStandup(user, text);
+      } catch (err) {
+        console.error('❌ Failed to save message:', err.message);
+      }
     }
   }
 
-  res.sendStatus(200);
+  return res.sendStatus(200);
 });
 
 module.exports = router;
