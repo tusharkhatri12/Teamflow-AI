@@ -499,21 +499,101 @@ body {
     padding: 0 1rem;
   }
   .hero {
-    padding: 6rem 0.5rem 2.5rem;
+    padding: 4rem 0.5rem 1.5rem;
   }
   .hero h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     margin-bottom: 0.7rem;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.1;
   }
   .features-heading {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.2;
+  }
+  .features-section {
+    padding: 32px 4px;
+  }
+  .feature-step {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 2px;
+    min-height: 0;
+    gap: 16px;
+    box-shadow: 0 2px 10px 0 #0002;
+  }
+  .step-text {
+    padding-right: 0;
+    text-align: left;
+    align-items: flex-start;
+    min-width: 0;
+    font-size: 0.98rem;
   }
   .step-title {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
+    margin: 8px 0 10px 0;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.2;
   }
   .step-description {
+    font-size: 0.95rem;
+    max-width: 98vw;
+    word-break: break-word;
+    white-space: normal;
+    line-height: 1.4;
+  }
+  .step-illustration {
+    margin-top: 0.5rem;
+    padding: 0;
+    min-width: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .step-illustration img {
+    max-width: 90vw;
+    max-height: 160px;
+    min-width: 0;
+    width: 100%;
+    height: auto;
+    padding: 4px;
+    border-radius: 10px;
+  }
+  .section {
+    padding: 2.5rem 0.5rem;
+  }
+  .cards, .pricing-cards {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+  .card, .plan-card, .plan-card.popular {
+    width: 98vw;
+    min-width: 0;
+    max-width: 340px;
+    padding: 1rem 0.5rem;
     font-size: 0.98rem;
+    box-sizing: border-box;
+    word-break: break-word;
+  }
+  .plan-card h3 {
+    font-size: 1.1rem;
+  }
+  .plan-card.popular {
+    min-height: unset;
+    transform: none;
+  }
+  .waitlist-form input[type="email"], .waitlist-form .waitlist-btn {
+    font-size: 1rem;
+    padding: 0.7rem 0.8rem;
+  }
+  .footer-content {
+    padding: 0 0.2rem;
+    font-size: 0.95rem;
   }
 }
   
