@@ -241,4 +241,44 @@
     flex-direction: column;
     gap: 0.2rem;
   }
+}
+
+@media (max-width: 400px) {
+  .signup-bg {
+    padding: 0.2rem;
+  }
+  .signup-form {
+    min-width: unset;
+    width: 100vw;
+    max-width: 100vw;
+    padding: 0.7rem 0.1rem 0.7rem 0.1rem;
+    border-radius: 7px;
+  }
+  .signup-title {
+    font-size: 1.05rem;
+    margin-bottom: 0.7rem;
+  }
+  .signup-form input,
+  .country-select {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.7rem;
+  }
+  .signup-btn-main, .google-btn {
+    font-size: 0.95rem;
+    padding: 0.6rem 0;
+  }
+  .signup-footer {
+    font-size: 0.9rem;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .show-hide-btn {
+    font-size: 0.9rem;
+    right: 4px;
+    top: 4px;
+  }
+  .error-message {
+    font-size: 0.92rem;
+    padding: 6px 6px;
+  }
 } 
