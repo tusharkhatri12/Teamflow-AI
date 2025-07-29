@@ -8,10 +8,20 @@ const Organization = require('../models/Organizations');
 
 const router = express.Router();
 
+// Simple test signup route
+router.post('/signup-test', (req, res) => {
+  console.log('Test signup endpoint hit');
+  console.log('Request body:', req.body);
+  res.json({ message: 'Test signup successful', data: req.body });
+});
+
 // Signup
 router.post('/signup', async (req, res) => {
+  console.log('Signup endpoint hit');
+  console.log('Request headers:', req.headers);
+  console.log('Request body:', req.body);
+  
   const { name, email, password, role, organizationName, joinCode } = req.body;
-  console.log('Signup request:', req.body);
   try {
     let user = await User.findOne({ email });
     if (user) {

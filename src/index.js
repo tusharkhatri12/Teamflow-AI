@@ -4,7 +4,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const apiRoutes = require('./routes/api');
-const bodyParser = require('body-parser');
 const slackRoutes = require('./routes/slack');
 const slashRouter = require('./routes/slash');
 const authRoutes = require('./routes/auth');
@@ -26,15 +25,39 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Enable CORS for frontend
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://teamflow-ai-zeta.vercel.app',
+  origin: ['https://teamflow-ai-zeta.vercel.app', 'http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Handle preflight requests
+app.options('*', cors());
+
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(passport.initialize());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.json({ 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test route
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is running' });
+});
 
 // Routes
 app.use('/api', apiRoutes);
@@ -62,6 +85,21 @@ app.get('/summaries', (req, res) => {
       res.status(500).json({ error: 'Invalid JSON in summaries file.' });
     }
   });
+});
+
+// Error handling middleware for body parsing and other errors
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ message: 'Invalid JSON in request body' });
+  }
+  
+  if (err.code === 'STREAM_NOT_READABLE') {
+    return res.status(400).json({ message: 'Request body parsing error' });
+  }
+  
+  res.status(500).json({ message: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 3000;
