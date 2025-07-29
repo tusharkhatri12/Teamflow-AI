@@ -42,25 +42,7 @@
   display: none;
 }
 
-.sidebar-toggle {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 6px;
-  transition: background 0.2s ease;
-  min-width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sidebar-toggle:hover {
-  background: #23272f;
-}
+/* Removed sidebar-toggle styles as we're using hamburger menu for all screens */
 
 .sidebar-modern-user {
   display: flex;
@@ -201,7 +183,34 @@
   color: #fff;
 }
 
-/* Mobile hamburger menu */
+/* Hamburger menu for all screens */
+.hamburger-menu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1300;
+  background: #181a20;
+  border: none;
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hamburger-menu:hover {
+  background: #23272f;
+}
+
+.hamburger-menu.active {
+  background: #23272f;
+}
+
+/* Mobile hamburger menu - keeping for backward compatibility */
 .mobile-hamburger {
   display: none;
   position: fixed;
@@ -244,8 +253,8 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .mobile-hamburger {
-    display: block;
+  .hamburger-menu.mobile {
+    display: flex;
   }
 
   .sidebar-modern {
@@ -253,8 +262,9 @@
     width: 280px;
   }
   
-  .sidebar-modern.open {
+  .sidebar-modern.mobile {
     transform: translateX(0);
+    width: 280px;
   }
   
   .sidebar-modern.collapsed {
@@ -280,6 +290,13 @@
 
   .sidebar-overlay.active {
     display: block;
+  }
+}
+
+/* Desktop hamburger menu */
+@media (min-width: 769px) {
+  .hamburger-menu.desktop {
+    display: flex;
   }
 }
 

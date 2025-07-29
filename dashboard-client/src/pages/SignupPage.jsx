@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Building, Users, Crown } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Building, Users, Crown, ArrowLeft } from 'lucide-react';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -16,6 +16,10 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -34,10 +38,9 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: data.user } }));
-        navigate('/dashboard');
+        setVerificationEmail(form.email);
+        setSuccessMessage(data.message);
+        setShowVerification(true);
       } else {
         setError(data.message || 'Signup failed. Please check your details.');
       }
@@ -48,10 +51,282 @@ export default function SignupPage() {
     }
   };
 
+  const handleVerifyEmail = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+      const res = await fetch(`${apiUrl}/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: verificationEmail, 
+          otp: otp 
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: data.user } }));
+        navigate('/dashboard');
+      } else {
+        setError(data.message || 'Invalid OTP');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+      const res = await fetch(`${apiUrl}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verificationEmail })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMessage('Verification OTP sent successfully');
+      } else {
+        setError(data.message || 'Failed to resend OTP');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackToSignup = () => {
+    setShowVerification(false);
+    setVerificationEmail('');
+    setOtp('');
+    setError('');
+    setSuccessMessage('');
+  };
+
   const handleGoogleSignup = () => {
     const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
     window.location.href = `${apiUrl}/auth/google`;
   };
+
+  if (showVerification) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            width: '100%',
+            maxWidth: '420px',
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            padding: '40px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            style={{ textAlign: 'center', marginBottom: '32px' }}
+          >
+            <button
+              onClick={handleBackToSignup}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#6b7280',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '20px',
+                fontSize: '14px',
+              }}
+            >
+              <ArrowLeft size={16} />
+              Back to Signup
+            </button>
+            <h1 style={{
+              fontSize: '28px',
+              fontWeight: '700',
+              color: '#1a1a1a',
+              marginBottom: '8px',
+            }}>
+              Verify Your Email
+            </h1>
+            <p style={{
+              color: '#666',
+              fontSize: '16px',
+              margin: 0,
+            }}>
+              Enter the 6-digit OTP sent to {verificationEmail}
+            </p>
+          </motion.div>
+
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                color: '#166534',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                marginBottom: '20px',
+              }}
+            >
+              {successMessage}
+            </motion.div>
+          )}
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                color: '#dc2626',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                marginBottom: '20px',
+              }}
+            >
+              {error}
+            </motion.div>
+          )}
+
+          <form onSubmit={handleVerifyEmail}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{ marginBottom: '24px' }}
+            >
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+              }}>
+                <input
+                  type="text"
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                  maxLength={6}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    background: '#fff',
+                    transition: 'all 0.2s',
+                    textAlign: 'center',
+                    letterSpacing: '4px',
+                    fontFamily: 'monospace',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#2563eb'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
+              </div>
+            </motion.div>
+
+            <motion.button
+              type="submit"
+              disabled={isLoading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              style={{
+                width: '100%',
+                padding: '16px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.7 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginBottom: '16px',
+              }}
+            >
+              {isLoading ? (
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  border: '2px solid #fff',
+                  borderTop: '2px solid transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                }} />
+              ) : (
+                <>
+                  Verify Email
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </motion.button>
+          </form>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            style={{
+              textAlign: 'center',
+              fontSize: '14px',
+              color: '#6b7280',
+            }}
+          >
+            <span>Didn't receive the OTP? </span>
+            <button
+              type="button"
+              onClick={handleResendOTP}
+              disabled={isLoading}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#2563eb',
+                fontWeight: '600',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              Resend OTP
+            </button>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div style={{

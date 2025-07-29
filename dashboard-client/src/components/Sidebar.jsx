@@ -8,7 +8,8 @@ import {
   FileText,
   MessageCircle,
   Brain,
-  LogOut
+  LogOut,
+  Menu
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -38,7 +39,12 @@ const Sidebar = ({ user, onLogout, isOpen, onToggle }) => {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      // On mobile, always start with menu closed
+      if (mobile) {
+        setMobileMenuOpen(false);
+      }
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -51,12 +57,16 @@ const Sidebar = ({ user, onLogout, isOpen, onToggle }) => {
 
   const handleNavClick = (path) => {
     navigate(path);
-    if (isMobile) setMobileMenuOpen(false);
+    if (isMobile) {
+      setMobileMenuOpen(false);
+    }
   };
 
   const handleLogoutClick = () => {
     onLogout();
-    if (isMobile) setMobileMenuOpen(false);
+    if (isMobile) {
+      setMobileMenuOpen(false);
+    }
   };
 
   // Sidebar animation variants
@@ -73,32 +83,33 @@ const Sidebar = ({ user, onLogout, isOpen, onToggle }) => {
     exit: { opacity: 0, x: -16, transition: { duration: 0.15 } },
   };
 
+  // Determine if sidebar should be visible
+  const shouldShowSidebar = isMobile ? mobileMenuOpen : isOpen;
+
   return (
     <>
-      {/* Mobile Hamburger Menu */}
-      {isMobile && (
-        <button 
-          className={`mobile-hamburger ${mobileMenuOpen ? 'active' : ''}`}
-          onClick={handleMobileToggle}
-          aria-label="Toggle menu"
-        >
-          <div className="hamburger-line"></div>
-          <div className="hamburger-line"></div>
-          <div className="hamburger-line"></div>
-        </button>
-      )}
+      {/* Hamburger Menu - Show on all screens */}
+      <button 
+        className={`hamburger-menu ${isMobile ? 'mobile' : 'desktop'} ${(isMobile ? mobileMenuOpen : isOpen) ? 'active' : ''}`}
+        onClick={isMobile ? handleMobileToggle : onToggle}
+        aria-label="Toggle menu"
+      >
+        <Menu size={24} />
+      </button>
+      
       {/* Mobile Overlay */}
-      {isMobile && (
+      {isMobile && mobileMenuOpen && (
         <div 
-          className={`sidebar-overlay ${mobileMenuOpen ? 'active' : ''}`}
+          className="sidebar-overlay active"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
+      
       {/* Sidebar */}
       <AnimatePresence>
-        {(isOpen || (isMobile && mobileMenuOpen)) && (
+        {shouldShowSidebar && (
           <motion.aside
-            className={`sidebar-modern glassy ${isOpen ? 'open' : 'collapsed'} ${isMobile && mobileMenuOpen ? 'open' : ''}`}
+            className={`sidebar-modern glassy ${isMobile ? 'mobile' : (isOpen ? 'open' : 'collapsed')}`}
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -115,11 +126,6 @@ const Sidebar = ({ user, onLogout, isOpen, onToggle }) => {
               <div className="sidebar-logo" style={{ fontWeight: 700, fontSize: 22, letterSpacing: 1 }}>
                 <span style={{ color: '#2563eb' }}>Team</span>Flow
               </div>
-              {!isMobile && (
-                <button className="sidebar-toggle" onClick={onToggle}>
-                  {isOpen ? '◀' : '▶'}
-                </button>
-              )}
             </div>
             <div className="sidebar-modern-user flex gap-2">
               <img
