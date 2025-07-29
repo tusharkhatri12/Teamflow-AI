@@ -6,7 +6,8 @@ const {
   getOrganizationDetails,
   inviteMember,
   removeMember,
-  getOrganizationMembers
+  getOrganizationMembers,
+  getJoinCode
 } = require('../controllers/OrganizationController');
 const authMiddleware = require('../middleware/auth');
 
@@ -16,5 +17,6 @@ router.get('/:orgId', authMiddleware, getOrganizationDetails);
 router.post('/invite', authMiddleware, inviteMember);
 router.post('/remove-member', authMiddleware, removeMember);
 router.get('/members', authMiddleware, getOrganizationMembers);
+router.get('/join-code', authMiddleware, getJoinCode);
 
 module.exports = router;

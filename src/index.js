@@ -35,13 +35,13 @@ app.use(cors({
 app.options('*', cors());
 
 // Middleware
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb', strict: false }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(passport.initialize());
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  console.log(`${req.method} ${req.path} - Content-Type: ${req.headers['content-type']}`);
   next();
 });
 
@@ -59,13 +59,34 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Server is running' });
 });
 
+// Simple POST test route
+app.post('/test-post', (req, res) => {
+  console.log('Test POST hit');
+  console.log('Body:', req.body);
+  res.json({ message: 'POST test successful', body: req.body });
+});
+
+// Raw body test route
+app.post('/test-raw', express.raw({ type: 'application/json' }), (req, res) => {
+  console.log('Raw test POST hit');
+  console.log('Raw body:', req.body);
+  try {
+    const parsed = JSON.parse(req.body);
+    res.json({ message: 'Raw POST test successful', body: parsed });
+  } catch (err) {
+    res.status(400).json({ message: 'Invalid JSON in raw body' });
+  }
+});
+
 // Routes
 app.use('/api', apiRoutes);
 app.use('/slash', slashRouter);
 app.use('/slack/events', slackRoutes);
-app.use('/auth', authRoutes);
 app.use('/org', orgRoutes);
 app.use('/api/organizations', orgRoutes);
+
+// Auth routes with specific middleware
+app.use('/auth', express.json({ limit: '10mb' }), authRoutes);
 
 // ✅ Correct path to /data/summaries.json
 app.get('/summaries', (req, res) => {
@@ -90,13 +111,19 @@ app.get('/summaries', (req, res) => {
 // Error handling middleware for body parsing and other errors
 app.use((err, req, res, next) => {
   console.error('Error:', err);
+  console.error('Error stack:', err.stack);
   
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ message: 'Invalid JSON in request body' });
   }
   
-  if (err.code === 'STREAM_NOT_READABLE') {
-    return res.status(400).json({ message: 'Request body parsing error' });
+  if (err.code === 'STREAM_NOT_READABLE' || err.message.includes('stream is not readable')) {
+    console.error('Stream error detected');
+    return res.status(400).json({ message: 'Request body parsing error - please check your request format' });
+  }
+  
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: 'Invalid request body format' });
   }
   
   res.status(500).json({ message: 'Internal server error' });

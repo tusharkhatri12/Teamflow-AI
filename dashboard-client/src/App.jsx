@@ -18,12 +18,17 @@ function AppContent({ theme, setTheme, user, onLogout }) {
   const location = useLocation();
   const isAuthPage = ["/login", "/signup", "/"].includes(location.pathname);
   const isLandingPage = location.pathname === "/" || location.pathname === "/landingpage";
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   return (
     <div className={`app ${theme}`}>
-      {!isAuthPage && <Sidebar isOpen={true} user={user} onLogout={onLogout} />}
+      {!isAuthPage && <Sidebar isOpen={sidebarOpen} user={user} onLogout={onLogout} onToggle={handleSidebarToggle} />}
       {isLandingPage && <Header setTheme={setTheme} />}
-      <main className="main">
+      <main className={`main ${!isAuthPage && sidebarOpen ? 'sidebar-open' : ''}`}>
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/summaries" element={<SummariesPage user={user} />} />

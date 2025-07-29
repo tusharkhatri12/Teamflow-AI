@@ -43,3 +43,25 @@ body, html, #root {
     transform: rotate(360deg);
   }
 }
+
+/* Main content area styles */
+.main {
+  margin-left: 220px;
+  transition: margin-left 0.3s cubic-bezier(.4,0,.2,1);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.main:not(.sidebar-open) {
+  margin-left: 60px;
+}
+
+@media (max-width: 900px) {
+  .main {
+    margin-left: 0;
+  }
+  
+  .main:not(.sidebar-open) {
+    margin-left: 0;
+  }
+}

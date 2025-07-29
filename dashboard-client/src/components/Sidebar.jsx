@@ -15,10 +15,15 @@ const adminSections = [
   { label: 'Employees', icon: '👥', path: '/employees' },
 ];
 
-const Sidebar = ({ isOpen, user, onLogout }) => {
+const Sidebar = ({ isOpen, user, onLogout, onToggle }) => {
   return (
-    <aside className={`sidebar-modern always-open${isOpen ? ' open animated' : ''}`}> 
-      <div className="sidebar-logo left">TeamFlow AI</div>
+    <aside className={`sidebar-modern${isOpen ? ' open' : ' collapsed'}`}> 
+      <div className="sidebar-header">
+        <div className="sidebar-logo">TeamFlow AI</div>
+        <button className="sidebar-toggle" onClick={onToggle}>
+          {isOpen ? '◀' : '▶'}
+        </button>
+      </div>
 
       <div className="sidebar-modern-user">
         <img

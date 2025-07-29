@@ -4,8 +4,10 @@ import './OrganizationPages.css';
 const OrganizationPage = ({ user }) => {
   const [organization, setOrganization] = useState(null);
   const [members, setMembers] = useState([]);
+  const [joinCode, setJoinCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -26,6 +28,16 @@ const OrganizationPage = ({ user }) => {
       if (orgResponse.ok) {
         const orgData = await orgResponse.json();
         setOrganization(orgData);
+      }
+
+      // Fetch organization join code
+      const joinCodeResponse = await fetch(`${apiUrl}/api/organizations/join-code`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (joinCodeResponse.ok) {
+        const joinCodeData = await joinCodeResponse.json();
+        setJoinCode(joinCodeData.joinCode);
       }
 
       // Fetch organization members
@@ -68,6 +80,24 @@ const OrganizationPage = ({ user }) => {
     }
   };
 
+  const copyJoinCode = async () => {
+    try {
+      await navigator.clipboard.writeText(joinCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = joinCode;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   if (user?.role !== 'admin') {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
@@ -107,7 +137,38 @@ const OrganizationPage = ({ user }) => {
         }}>
           <h3>Organization Details</h3>
           <p><strong>Name:</strong> {organization.name}</p>
-          <p><strong>Join Code:</strong> {organization.joinCode}</p>
+          <div style={{ 
+            backgroundColor: '#f8f9fa', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            margin: '10px 0',
+            border: '2px solid #007bff'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ margin: '0', fontWeight: 'bold', color: '#007bff' }}>
+                  Organization Join Code: <span style={{ fontSize: '18px', letterSpacing: '2px' }}>{joinCode}</span>
+                </p>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#666' }}>
+                  Share this code with employees to let them join your organization
+                </p>
+              </div>
+              <button
+                onClick={copyJoinCode}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: copied ? '#28a745' : '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+          </div>
           <p><strong>Total Members:</strong> {members.length}</p>
         </div>
       )}

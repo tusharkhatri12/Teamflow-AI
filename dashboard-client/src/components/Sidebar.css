@@ -16,6 +16,56 @@
   transition: transform 0.35s cubic-bezier(.4,0,.2,1), width 0.3s cubic-bezier(.4,0,.2,1);
   transform: translateX(0);
 }
+
+.sidebar-modern.collapsed {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.sidebar-modern.collapsed .sidebar-modern-label,
+.sidebar-modern.collapsed .sidebar-modern-username {
+  display: none;
+}
+
+.sidebar-modern.collapsed .sidebar-nav-modern a {
+  justify-content: center;
+  padding: 16px 8px;
+}
+
+.sidebar-modern.collapsed .sidebar-modern-logout {
+  justify-content: center;
+  padding: 16px 8px;
+}
+
+.sidebar-modern.collapsed .sidebar-modern-user {
+  justify-content: center;
+  padding: 18px 8px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  width: 100%;
+  background: #181a20;
+}
+
+.sidebar-toggle {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.sidebar-toggle:hover {
+  background: #23272f;
+}
 .sidebar-modern.always-open {
   width: 220px;
   min-width: 220px;

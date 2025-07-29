@@ -17,12 +17,13 @@ router.post('/signup-test', (req, res) => {
 
 // Signup
 router.post('/signup', async (req, res) => {
-  console.log('Signup endpoint hit');
-  console.log('Request headers:', req.headers);
-  console.log('Request body:', req.body);
-  
-  const { name, email, password, role, organizationName, joinCode } = req.body;
   try {
+    console.log('Signup endpoint hit');
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+    
+    const { name, email, password, role, organizationName, joinCode } = req.body;
+    
     let user = await User.findOne({ email });
     if (user) {
       console.log('User already exists:', email);
@@ -34,25 +35,27 @@ router.post('/signup', async (req, res) => {
 
     // If user is admin, create organization
     if (role === 'admin' && organizationName) {
-      const joinCode = nanoid(6);
+      const generatedJoinCode = nanoid(6).toUpperCase();
       const org = new Organization({
         name: organizationName,
-        joinCode,
+        joinCode: generatedJoinCode,
         admin: user._id,
         members: [user._id]
       });
       await org.save();
       user.organization = org._id;
+      console.log('Organization created with join code:', generatedJoinCode);
     }
     // If user is employee, join organization
     else if (role === 'employee' && joinCode) {
-      const org = await Organization.findOne({ joinCode });
+      const org = await Organization.findOne({ joinCode: joinCode.toUpperCase() });
       if (!org) {
         return res.status(400).json({ message: 'Invalid join code' });
       }
       user.organization = org._id;
       org.members.push(user._id);
       await org.save();
+      console.log('User joined organization:', org.name);
     }
 
     await user.save();

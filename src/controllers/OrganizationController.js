@@ -135,3 +135,22 @@ exports.getOrganizationMembers = async (req, res) => {
     res.status(500).json({ message: 'Error fetching members', error: err.message });
   }
 };
+
+// GET /api/organizations/join-code
+exports.getJoinCode = async (req, res) => {
+  try {
+    const org = await Organization.findById(req.user.organization);
+    
+    if (!org) {
+      return res.status(404).json({ message: 'Organization not found' });
+    }
+
+    if (String(org.admin) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only admin can view join code' });
+    }
+
+    res.status(200).json({ joinCode: org.joinCode });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching join code', error: err.message });
+  }
+};
