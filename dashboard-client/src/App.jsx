@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
@@ -11,7 +11,8 @@ import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import OrganizationsPage from "./pages/OrganizationPages";
 import EmployeePage from "./pages/EmployeePage";
-import "./index.css";
+import JoinOrganization from "./pages/JoinOrganization";
+  import "./index.css";
 
 function AppContent({ theme, setTheme, user, onLogout }) {
   const location = useLocation();
@@ -25,11 +26,12 @@ function AppContent({ theme, setTheme, user, onLogout }) {
       <main className="main">
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/summaries" element={<SummariesPage />} />
+          <Route path="/summaries" element={<SummariesPage user={user} />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/memory" element={<MemoryPage />} />
           <Route path="/organizations" element={<OrganizationsPage user={user} />} />
           <Route path="/employees" element={<EmployeePage user={user} />} />
+          <Route path="/join-organization" element={<JoinOrganization />} />
           <Route path="/landingpage" element={<LandingPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -42,15 +44,18 @@ function AppContent({ theme, setTheme, user, onLogout }) {
 
 const App = () => {
   const [theme, setTheme] = useState("dark");
-  const [user, setUser] = useState({
-    _id: "user123",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "admin", // or "employee"
-    organizationId: "org123",
-  });
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 

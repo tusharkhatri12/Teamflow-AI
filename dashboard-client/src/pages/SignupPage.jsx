@@ -4,7 +4,14 @@ import './SignupPage.css';
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', address: '' });
+  const [form, setForm] = useState({ 
+    name: '', 
+    email: '', 
+    password: '', 
+    role: 'employee',
+    organizationName: '',
+    joinCode: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,11 +27,12 @@ export default function SignupPage() {
       const res = await fetch(`${apiUrl}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password })
+        body: JSON.stringify(form)
       });
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/dashboard');
       } else {
         setError(data.message || 'Signup failed. Please check your details.');
@@ -83,14 +91,48 @@ export default function SignupPage() {
             {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
-        <input
-          type="text"
-          name="address"
-          placeholder="Address"
-          value={form.address}
-          onChange={handleChange}
-          required
-        />
+        <div className="role-selection">
+          <label>I am a:</label>
+          <div className="role-buttons">
+            <button
+              type="button"
+              className={`role-btn ${form.role === 'employee' ? 'active' : ''}`}
+              onClick={() => setForm({ ...form, role: 'employee' })}
+            >
+              Employee
+            </button>
+            <button
+              type="button"
+              className={`role-btn ${form.role === 'admin' ? 'active' : ''}`}
+              onClick={() => setForm({ ...form, role: 'admin' })}
+            >
+              Admin
+            </button>
+          </div>
+        </div>
+
+        {form.role === 'admin' && (
+          <input
+            type="text"
+            name="organizationName"
+            placeholder="Organization Name"
+            value={form.organizationName}
+            onChange={handleChange}
+            required
+          />
+        )}
+
+        {form.role === 'employee' && (
+          <input
+            type="text"
+            name="joinCode"
+            placeholder="Organization Join Code"
+            value={form.joinCode}
+            onChange={handleChange}
+            required
+          />
+        )}
+
         <button className="signup-btn-main" type="submit">Sign Up</button>
         <div className="signup-footer">
           <span>Already have an account?</span>

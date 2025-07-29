@@ -10,23 +10,36 @@ const Dashboard = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
     if (!token) {
       navigate('/login');
       return;
     }
-    const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
-    fetch(`${apiUrl}/api/protected`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Unauthorized');
-        return res.json();
+
+    // Use stored user data if available
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      // Fetch user data from API
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+      fetch(`${apiUrl}/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
       })
-      .then(data => setUser(data.user))
-      .catch(() => {
-        localStorage.removeItem('token');
-        navigate('/login');
-      });
+        .then(res => {
+          if (!res.ok) throw new Error('Unauthorized');
+          return res.json();
+        })
+        .then(data => {
+          setUser(data.user);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigate('/login');
+        });
+    }
   }, [navigate]);
 
   const handleLogout = () => {
@@ -57,7 +70,12 @@ const Dashboard = () => {
             <span className="dashboard-card-icon">📄</span>
             <div>
               <div className="dashboard-card-title">Summaries</div>
-              <div className="dashboard-card-desc">View all daily standup summaries powered by AI.</div>
+              <div className="dashboard-card-desc">
+                {user?.role === 'admin' 
+                  ? 'View all daily standup summaries powered by AI.' 
+                  : 'View your daily standup summaries powered by AI.'
+                }
+              </div>
             </div>
           </div>
           <div className="dashboard-card" onClick={() => navigate('/messages')}>
@@ -74,6 +92,25 @@ const Dashboard = () => {
               <div className="dashboard-card-desc">Explore long-term memory and team progress.</div>
             </div>
           </div>
+          
+          {user?.role === 'admin' && (
+            <>
+              <div className="dashboard-card" onClick={() => navigate('/organizations')}>
+                <span className="dashboard-card-icon">🏢</span>
+                <div>
+                  <div className="dashboard-card-title">Organization</div>
+                  <div className="dashboard-card-desc">Manage your organization settings and join codes.</div>
+                </div>
+              </div>
+              <div className="dashboard-card" onClick={() => navigate('/employees')}>
+                <span className="dashboard-card-icon">👥</span>
+                <div>
+                  <div className="dashboard-card-title">Employees</div>
+                  <div className="dashboard-card-desc">View and manage all employees in your organization.</div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

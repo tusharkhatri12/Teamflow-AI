@@ -34,6 +34,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/dashboard');
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');

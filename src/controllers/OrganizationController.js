@@ -116,3 +116,22 @@ exports.removeMember = async (req, res) => {
     res.status(500).json({ message: 'Error removing member', error: err.message });
   }
 };
+
+// GET /api/organizations/members
+exports.getOrganizationMembers = async (req, res) => {
+  try {
+    const org = await Organization.findById(req.user.organization).populate('members', 'name email role');
+    
+    if (!org) {
+      return res.status(404).json({ message: 'Organization not found' });
+    }
+
+    if (String(org.admin) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only admin can view members' });
+    }
+
+    res.status(200).json({ members: org.members });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching members', error: err.message });
+  }
+};
