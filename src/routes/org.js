@@ -7,7 +7,7 @@ const {
   inviteMember,
   removeMember
 } = require('../controllers/OrganizationController');
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleware/auth');
 
 router.post('/create', authMiddleware, createOrganization);
 router.post('/join', authMiddleware, joinOrganization);
