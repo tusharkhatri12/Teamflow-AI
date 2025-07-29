@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './OrganizationPage.css';
+import './OrganizationPages.css';
 
 const OrganizationPage = () => {
   const [org, setOrg] = useState(null);

@@ -10,7 +10,7 @@ import LandingPage from "./pages/LandingPage";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import OrganizationsPage from "./pages/OrganizationPages";
-import EmployeesPage from "./pages/EmployeesPage";
+import EmployeePage from "./pages/EmployeePage";
 import "./index.css";
 
 function AppContent({ theme, setTheme, user, onLogout }) {
@@ -28,7 +28,7 @@ function AppContent({ theme, setTheme, user, onLogout }) {
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/memory" element={<MemoryPage />} />
           <Route path="/organizations" element={<OrganizationsPage user={user} />} />
-          <Route path="/employees" element={<EmployeesPage user={user} />} />
+          <Route path="/employees" element={<EmployeePage user={user} />} />
           <Route path="/landingpage" element={<LandingPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
