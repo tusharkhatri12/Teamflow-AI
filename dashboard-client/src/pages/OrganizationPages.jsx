@@ -20,14 +20,31 @@ const OrganizationPage = ({ user }) => {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
       
+      console.log('User organization:', user.organization);
+      
+      if (!user.organization) {
+        setError('No organization found for this user');
+        setLoading(false);
+        return;
+      }
+      
       // Fetch organization details
       const orgResponse = await fetch(`${apiUrl}/api/organizations/${user.organization}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Organization response:', orgResponse.status);
+      
       if (orgResponse.ok) {
         const orgData = await orgResponse.json();
+        console.log('Organization data:', orgData);
         setOrganization(orgData);
+        // Also set join code from organization data as fallback
+        if (orgData.joinCode) {
+          setJoinCode(orgData.joinCode);
+        }
+      } else {
+        console.error('Failed to fetch organization:', orgResponse.status);
       }
 
       // Fetch organization join code
@@ -35,9 +52,14 @@ const OrganizationPage = ({ user }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Join code response:', joinCodeResponse.status);
+      
       if (joinCodeResponse.ok) {
         const joinCodeData = await joinCodeResponse.json();
+        console.log('Join code data:', joinCodeData);
         setJoinCode(joinCodeData.joinCode);
+      } else {
+        console.error('Failed to fetch join code:', joinCodeResponse.status);
       }
 
       // Fetch organization members
@@ -45,11 +67,17 @@ const OrganizationPage = ({ user }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Members response:', membersResponse.status);
+      
       if (membersResponse.ok) {
         const membersData = await membersResponse.json();
+        console.log('Members data:', membersData);
         setMembers(membersData.members);
+      } else {
+        console.error('Failed to fetch members:', membersResponse.status);
       }
     } catch (err) {
+      console.error('Error fetching organization data:', err);
       setError('Failed to fetch organization data');
     } finally {
       setLoading(false);
@@ -98,6 +126,8 @@ const OrganizationPage = ({ user }) => {
     }
   };
 
+  console.log('OrganizationPage user:', user);
+  
   if (user?.role !== 'admin') {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>

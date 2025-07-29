@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
-import Sidebar from '../components/Sidebar';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -50,8 +48,7 @@ const Dashboard = () => {
   if (!user) return null; // Or add a loading spinner here
 
   return (
-    <div className="dashboard-root sidebar-open">
-      <Sidebar user={user} isOpen={sidebarOpen} onLogout={handleLogout} />
+    <div className="dashboard-root">
       <div className="dashboard-main">
         <div className="dashboard-header-row">
           <h2 className="dashboard-title-large">👋 Welcome to Your Slack Standup Dashboard</h2>
