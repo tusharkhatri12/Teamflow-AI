@@ -10,8 +10,11 @@ const EmployeesPage = ({ user }) => {
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
-    if (user?.role === 'admin') {
+    if (user) {
+      console.log('EmployeePage: User found, fetching data for role:', user.role);
       fetchEmployees();
+    } else {
+      console.log('EmployeePage: No user found');
     }
   }, [user]);
 
@@ -20,22 +23,36 @@ const EmployeesPage = ({ user }) => {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
       
+      console.log('EmployeePage: Starting fetch for user:', user);
+      console.log('EmployeePage: User organization:', user.organization);
+      
+      if (!user.organization) {
+        console.log('EmployeePage: No organization found for user');
+        setError('No organization found for this user');
+        setLoading(false);
+        return;
+      }
+      
       const orgId = user.organization?._id || user.organization;
+      console.log('EmployeePage: Fetching organization with ID:', orgId);
+      
       const response = await fetch(`${apiUrl}/api/organizations/${orgId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('EmployeePage: Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        console.log('Employee data:', data);
+        console.log('EmployeePage: Employee data received:', data);
         setEmployees(data.members || []);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to fetch employees:', response.status, errorData);
-        setError('Failed to fetch employees');
+        console.error('EmployeePage: Failed to fetch employees:', response.status, errorData);
+        setError(`Failed to fetch employees: ${errorData.message || 'Unknown error'}`);
       }
     } catch (err) {
-      console.error('Error fetching employees:', err);
+      console.error('EmployeePage: Error fetching employees:', err);
       setError('Failed to fetch employees');
     } finally {
       setLoading(false);

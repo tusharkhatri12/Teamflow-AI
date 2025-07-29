@@ -15,8 +15,11 @@ const OrganizationPage = ({ user }) => {
   }, [members]);
 
   useEffect(() => {
-    if (user?.role === 'admin') {
+    if (user) {
+      console.log('OrganizationPage: User found, fetching data for role:', user.role);
       fetchOrganizationData();
+    } else {
+      console.log('OrganizationPage: No user found');
     }
   }, [user]);
 
@@ -25,68 +28,65 @@ const OrganizationPage = ({ user }) => {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
       
-      console.log('User:', user);
-      console.log('User organization:', user.organization);
-      console.log('User organization ID:', user.organization?._id || user.organization);
-      console.log('Token:', token ? 'Present' : 'Missing');
-      
-      try {
-        const testResponse = await fetch(`${apiUrl}/api/organizations/test`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const testData = await testResponse.json();
-        console.log('Auth test response:', testData);
-      } catch (err) {
-        console.error('Auth test failed:', err);
-      }
+      console.log('OrganizationPage: Starting fetch for user:', user);
+      console.log('OrganizationPage: User organization:', user.organization);
+      console.log('OrganizationPage: User organization ID:', user.organization?._id || user.organization);
+      console.log('OrganizationPage: Token present:', !!token);
       
       if (!user.organization) {
+        console.log('OrganizationPage: No organization found for user');
         setError('No organization found for this user');
         setLoading(false);
         return;
       }
       
       const orgId = user.organization?._id || user.organization;
+      console.log('OrganizationPage: Fetching organization with ID:', orgId);
+      
       const orgResponse = await fetch(`${apiUrl}/api/organizations/${orgId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('Organization response:', orgResponse.status);
+      console.log('OrganizationPage: Organization response status:', orgResponse.status);
       
       if (orgResponse.ok) {
         const orgData = await orgResponse.json();
-        console.log('Organization data:', orgData);
+        console.log('OrganizationPage: Organization data received:', orgData);
         setOrganization(orgData);
         if (orgData.members) {
-          console.log('Setting members from organization data:', orgData.members);
+          console.log('OrganizationPage: Setting members:', orgData.members);
           setMembers(orgData.members);
         } else {
-          console.log('No members found in organization data');
+          console.log('OrganizationPage: No members found in organization data');
         }
         if (orgData.joinCode) {
           setJoinCode(orgData.joinCode);
         }
       } else {
         const errorData = await orgResponse.json().catch(() => ({}));
-        console.error('Failed to fetch organization:', orgResponse.status, errorData);
+        console.error('OrganizationPage: Failed to fetch organization:', orgResponse.status, errorData);
+        setError(`Failed to fetch organization: ${errorData.message || 'Unknown error'}`);
       }
 
-      const joinCodeResponse = await fetch(`${apiUrl}/api/organizations/join-code`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      console.log('Join code response:', joinCodeResponse.status);
-      
-      if (joinCodeResponse.ok) {
-        const joinCodeData = await joinCodeResponse.json();
-        console.log('Join code data:', joinCodeData);
-        setJoinCode(joinCodeData.joinCode);
-      } else {
-        const errorData = await joinCodeResponse.json().catch(() => ({}));
-        console.error('Failed to fetch join code:', joinCodeResponse.status, errorData);
+      // Only fetch join code for admins
+      if (user.role === 'admin') {
+        const joinCodeResponse = await fetch(`${apiUrl}/api/organizations/join-code`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        console.log('OrganizationPage: Join code response status:', joinCodeResponse.status);
+        
+        if (joinCodeResponse.ok) {
+          const joinCodeData = await joinCodeResponse.json();
+          console.log('OrganizationPage: Join code data:', joinCodeData);
+          setJoinCode(joinCodeData.joinCode);
+        } else {
+          const errorData = await joinCodeResponse.json().catch(() => ({}));
+          console.error('OrganizationPage: Failed to fetch join code:', joinCodeResponse.status, errorData);
+        }
       }
     } catch (err) {
-      console.error('Error fetching organization data:', err);
+      console.error('OrganizationPage: Error fetching organization data:', err);
       setError('Failed to fetch organization data');
     } finally {
       setLoading(false);
