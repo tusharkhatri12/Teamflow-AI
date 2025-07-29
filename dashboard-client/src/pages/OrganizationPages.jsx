@@ -8,6 +8,11 @@ const OrganizationPage = ({ user }) => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Debug: Log members state changes
+  useEffect(() => {
+    console.log('Members state updated:', members);
+  }, [members]);
+
   useEffect(() => {
     if (user?.role === 'admin') {
       fetchOrganizationData();
@@ -21,6 +26,7 @@ const OrganizationPage = ({ user }) => {
       
       console.log('User:', user);
       console.log('User organization:', user.organization);
+      console.log('User organization ID:', user.organization?._id || user.organization);
       console.log('Token:', token ? 'Present' : 'Missing');
       
       // Test auth endpoint
@@ -41,7 +47,8 @@ const OrganizationPage = ({ user }) => {
       }
       
       // Fetch organization details
-      const orgResponse = await fetch(`${apiUrl}/api/organizations/${user.organization}`, {
+      const orgId = user.organization?._id || user.organization;
+      const orgResponse = await fetch(`${apiUrl}/api/organizations/${orgId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -51,6 +58,13 @@ const OrganizationPage = ({ user }) => {
         const orgData = await orgResponse.json();
         console.log('Organization data:', orgData);
         setOrganization(orgData);
+        // Set members from organization data
+        if (orgData.members) {
+          console.log('Setting members from organization data:', orgData.members);
+          setMembers(orgData.members);
+        } else {
+          console.log('No members found in organization data');
+        }
         // Also set join code from organization data as fallback
         if (orgData.joinCode) {
           setJoinCode(orgData.joinCode);
@@ -76,21 +90,8 @@ const OrganizationPage = ({ user }) => {
         console.error('Failed to fetch join code:', joinCodeResponse.status, errorData);
       }
 
-      // Fetch organization members
-      const membersResponse = await fetch(`${apiUrl}/api/organizations/members`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      console.log('Members response:', membersResponse.status);
-      
-      if (membersResponse.ok) {
-        const membersData = await membersResponse.json();
-        console.log('Members data:', membersData);
-        setMembers(membersData.members);
-      } else {
-        const errorData = await membersResponse.json().catch(() => ({}));
-        console.error('Failed to fetch members:', membersResponse.status, errorData);
-      }
+      // Note: Members are now fetched from the organization data above
+      // No need for separate members API call
     } catch (err) {
       console.error('Error fetching organization data:', err);
       setError('Failed to fetch organization data');

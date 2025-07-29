@@ -18,17 +18,23 @@ const EmployeesPage = ({ user }) => {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
       
-      const response = await fetch(`${apiUrl}/api/organizations/members`, {
+      // Fetch organization details which includes members
+      const orgId = user.organization?._id || user.organization;
+      const response = await fetch(`${apiUrl}/api/organizations/${orgId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.ok) {
         const data = await response.json();
-        setEmployees(data.members);
+        console.log('Employee data:', data);
+        setEmployees(data.members || []);
       } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch employees:', response.status, errorData);
         setError('Failed to fetch employees');
       }
     } catch (err) {
+      console.error('Error fetching employees:', err);
       setError('Failed to fetch employees');
     } finally {
       setLoading(false);
