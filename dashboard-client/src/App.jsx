@@ -16,11 +16,12 @@ import "./index.css";
 function AppContent({ theme, setTheme, user, onLogout }) {
   const location = useLocation();
   const isAuthPage = ["/login", "/signup", "/"].includes(location.pathname);
+  const isLandingPage = location.pathname === "/" || location.pathname === "/landingpage";
 
   return (
     <div className={`app ${theme}`}>
       {!isAuthPage && <Sidebar isOpen={true} user={user} onLogout={onLogout} />}
-      {!isAuthPage && <Header setTheme={setTheme} />}
+      {isLandingPage && <Header setTheme={setTheme} />}
       <main className="main">
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
