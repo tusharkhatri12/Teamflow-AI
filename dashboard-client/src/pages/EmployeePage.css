@@ -1,0 +1,27 @@
+.employees-container {
+    padding: 2rem;
+    max-width: 700px;
+    margin: auto;
+  }
+  
+  .employees-container ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .employees-container li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .employees-container button {
+    background-color: red;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    cursor: pointer;
+  }
+  

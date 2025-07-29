@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const slackRoutes = require('./routes/slack');
 const slashRouter = require('./routes/slash');
 const authRoutes = require('./routes/auth');
+const orgRoutes = require('./routes/org');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
@@ -40,6 +41,8 @@ app.use('/api', apiRoutes);
 app.use('/slash', slashRouter);
 app.use('/slack/events', slackRoutes);
 app.use('/auth', authRoutes);
+app.use('/org', orgRoutes);
+app.use('/api/organizations', orgRoutes);
 
 // ✅ Correct path to /data/summaries.json
 app.get('/summaries', (req, res) => {

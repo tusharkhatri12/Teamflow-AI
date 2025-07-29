@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const User = require('../models/User');
+const Organization = require('../models/Organization');
 
 const router = express.Router();
 
@@ -44,6 +45,16 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/invite', async (req, res) => {
+  const { orgId } = req.body;
+
+  const joinCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+  const updated = await Organization.findByIdAndUpdate(orgId, { joinCode }, { new: true });
+
+  res.json({ joinCode });
+});
+
+
 // Google OAuth
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'],prompt: 'select_account' }));
 
@@ -54,5 +65,6 @@ router.get('/google/callback', passport.authenticate('google', { session: false,
   // You can redirect to your frontend and pass the token as a query param
   res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
 });
+
 
 module.exports = router; 

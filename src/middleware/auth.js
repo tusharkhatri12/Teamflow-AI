@@ -14,5 +14,10 @@ function authMiddleware(req, res, next) {
     res.status(401).json({ message: 'Token is not valid' });
   }
 }
+exports.isAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  next();
+};
+
 
 module.exports = authMiddleware; 
