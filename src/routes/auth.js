@@ -5,8 +5,14 @@ const passport = require('passport');
 const { nanoid } = require('nanoid');
 const User = require('../models/User');
 const Organization = require('../models/Organizations');
+const { sendPasswordResetOTP, sendEmailVerificationOTP } = require('../services/emailService');
 
 const router = express.Router();
+
+// Generate OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 // Simple test signup route
 router.post('/signup-test', (req, res) => {
@@ -15,7 +21,7 @@ router.post('/signup-test', (req, res) => {
   res.json({ message: 'Test signup successful', data: req.body });
 });
 
-// Signup
+// Signup with email verification
 router.post('/signup', async (req, res) => {
   try {
     console.log('Signup endpoint hit');
@@ -32,6 +38,11 @@ router.post('/signup', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     user = new User({ name, email, password: hashedPassword, role });
+
+    // Generate email verification OTP
+    const emailVerificationOtp = generateOTP();
+    user.emailVerificationOtp = emailVerificationOtp;
+    user.emailVerificationOtpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // If user is admin, create organization
     if (role === 'admin' && organizationName) {
@@ -60,9 +71,15 @@ router.post('/signup', async (req, res) => {
 
     await user.save();
     console.log('User created:', user);
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    // Send email verification OTP
+    const emailSent = await sendEmailVerificationOTP(email, emailVerificationOtp);
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send verification email' });
+    }
+
     res.json({ 
-      token, 
+      message: 'User created successfully. Please check your email for verification OTP.',
       user: { 
         id: user._id, 
         name: user.name, 
@@ -77,6 +94,143 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+// Verify email OTP
+router.post('/verify-email', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'Email already verified' });
+    }
+
+    if (user.emailVerificationOtp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (new Date() > user.emailVerificationOtpExpiry) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationOtp = undefined;
+    user.emailVerificationOtpExpiry = undefined;
+    await user.save();
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    res.json({ 
+      message: 'Email verified successfully',
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        organization: user.organization 
+      } 
+    });
+  } catch (err) {
+    console.error('Email verification error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Resend email verification OTP
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'Email already verified' });
+    }
+
+    const emailVerificationOtp = generateOTP();
+    user.emailVerificationOtp = emailVerificationOtp;
+    user.emailVerificationOtpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save();
+
+    const emailSent = await sendEmailVerificationOTP(email, emailVerificationOtp);
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send verification email' });
+    }
+
+    res.json({ message: 'Verification OTP sent successfully' });
+  } catch (err) {
+    console.error('Resend verification error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Forgot password - send OTP
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    // Generate password reset OTP
+    const resetOtp = generateOTP();
+    user.resetPasswordOtp = resetOtp;
+    user.resetPasswordOtpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save();
+
+    // Send password reset OTP email
+    const emailSent = await sendPasswordResetOTP(email, resetOtp);
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send password reset email' });
+    }
+
+    res.json({ message: 'Password reset OTP sent to your email' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reset password with OTP
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    if (user.resetPasswordOtp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (new Date() > user.resetPasswordOtpExpiry) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordOtpExpiry = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -84,6 +238,15 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email }).populate('organization');
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
     if (!user.password) return res.status(400).json({ message: 'Use Google login' });
+    
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      return res.status(400).json({ 
+        message: 'Please verify your email first. Check your inbox for verification OTP.',
+        needsVerification: true 
+      });
+    }
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });

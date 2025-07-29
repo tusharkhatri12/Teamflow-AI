@@ -7,6 +7,12 @@ const UserSchema = new mongoose.Schema({
   organization: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
   role: { type: String, enum: ['admin', 'employee'], default: 'employee' },
   googleId: { type: String },
+  // Forgot password fields
+  resetPasswordOtp: { type: String },
+  resetPasswordOtpExpiry: { type: Date },
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationOtp: { type: String },
+  emailVerificationOtpExpiry: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema); 
