@@ -35,6 +35,8 @@ export default function LoginPage() {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        // Dispatch custom event to notify sidebar of user change
+        window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: data.user } }));
         navigate('/dashboard');
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');

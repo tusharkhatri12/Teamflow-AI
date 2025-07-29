@@ -154,3 +154,31 @@ exports.getJoinCode = async (req, res) => {
     res.status(500).json({ message: 'Error fetching join code', error: err.message });
   }
 };
+
+// POST /api/organizations/change-role
+exports.changeRole = async (req, res) => {
+  try {
+    const { userId, role } = req.body;
+    const org = await Organization.findById(req.user.organization);
+
+    if (!org || String(org.admin) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Only admin can change roles' });
+    }
+
+    if (!org.members.includes(userId)) {
+      return res.status(404).json({ message: 'User not found in organization' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.role = role;
+    await user.save();
+
+    res.status(200).json({ message: 'Role changed successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error changing role', error: err.message });
+  }
+};

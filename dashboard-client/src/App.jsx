@@ -58,10 +58,35 @@ const App = () => {
     }
   }, []);
 
+  // Listen for storage changes and custom events to update user state
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        setUser(null);
+      }
+    };
+
+    const handleUserStateChange = (event) => {
+      setUser(event.detail.user);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('userStateChanged', handleUserStateChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userStateChanged', handleUserStateChange);
+    };
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
+    // Dispatch custom event to notify sidebar of user change
+    window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: null } }));
   };
 
   return (

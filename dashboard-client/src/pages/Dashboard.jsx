@@ -31,6 +31,8 @@ const Dashboard = () => {
         .then(data => {
           setUser(data.user);
           localStorage.setItem('user', JSON.stringify(data.user));
+          // Dispatch custom event to notify sidebar of user change
+          window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: data.user } }));
         })
         .catch(() => {
           localStorage.removeItem('token');
