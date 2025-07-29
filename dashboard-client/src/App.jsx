@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
@@ -12,10 +12,11 @@ import LoginPage from "./pages/LoginPage";
 import OrganizationsPage from "./pages/OrganizationPages";
 import EmployeePage from "./pages/EmployeePage";
 import JoinOrganization from "./pages/JoinOrganization";
-  import "./index.css";
+import "./index.css";
 
 function AppContent({ theme, setTheme, user, onLogout }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const isAuthPage = ["/login", "/signup", "/"].includes(location.pathname);
   const isLandingPage = location.pathname === "/" || location.pathname === "/landingpage";
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -24,9 +25,18 @@ function AppContent({ theme, setTheme, user, onLogout }) {
     setSidebarOpen(!sidebarOpen);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // Dispatch custom event to notify sidebar of user change
+    window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: null } }));
+    // Navigate to login page
+    navigate('/login');
+  };
+
   return (
     <div className={`app ${theme}`}>
-      {!isAuthPage && <Sidebar isOpen={sidebarOpen} user={user} onLogout={onLogout} onToggle={handleSidebarToggle} />}
+      {!isAuthPage && <Sidebar isOpen={sidebarOpen} user={user} onLogout={handleLogout} onToggle={handleSidebarToggle} />}
       {isLandingPage && <Header setTheme={setTheme} />}
       <main className={`main ${!isAuthPage && sidebarOpen ? 'sidebar-open' : ''}`}>
         <Routes>
@@ -81,17 +91,9 @@ const App = () => {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    // Dispatch custom event to notify sidebar of user change
-    window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: null } }));
-  };
-
   return (
     <BrowserRouter>
-      <AppContent theme={theme} setTheme={setTheme} user={user} onLogout={handleLogout} />
+      <AppContent theme={theme} setTheme={setTheme} user={user} />
     </BrowserRouter>
   );
 };

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Users, Crown, Copy, Check, Trash2, Building, User, Settings } from 'lucide-react';
 
 const OrganizationPage = ({ user }) => {
   const [organization, setOrganization] = useState(null);
@@ -8,7 +10,6 @@ const OrganizationPage = ({ user }) => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // Debug: Log members state changes
   useEffect(() => {
     console.log('Members state updated:', members);
   }, [members]);
@@ -29,7 +30,6 @@ const OrganizationPage = ({ user }) => {
       console.log('User organization ID:', user.organization?._id || user.organization);
       console.log('Token:', token ? 'Present' : 'Missing');
       
-      // Test auth endpoint
       try {
         const testResponse = await fetch(`${apiUrl}/api/organizations/test`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -46,7 +46,6 @@ const OrganizationPage = ({ user }) => {
         return;
       }
       
-      // Fetch organization details
       const orgId = user.organization?._id || user.organization;
       const orgResponse = await fetch(`${apiUrl}/api/organizations/${orgId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -58,14 +57,12 @@ const OrganizationPage = ({ user }) => {
         const orgData = await orgResponse.json();
         console.log('Organization data:', orgData);
         setOrganization(orgData);
-        // Set members from organization data
         if (orgData.members) {
           console.log('Setting members from organization data:', orgData.members);
           setMembers(orgData.members);
         } else {
           console.log('No members found in organization data');
         }
-        // Also set join code from organization data as fallback
         if (orgData.joinCode) {
           setJoinCode(orgData.joinCode);
         }
@@ -74,7 +71,6 @@ const OrganizationPage = ({ user }) => {
         console.error('Failed to fetch organization:', orgResponse.status, errorData);
       }
 
-      // Fetch organization join code
       const joinCodeResponse = await fetch(`${apiUrl}/api/organizations/join-code`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -89,9 +85,6 @@ const OrganizationPage = ({ user }) => {
         const errorData = await joinCodeResponse.json().catch(() => ({}));
         console.error('Failed to fetch join code:', joinCodeResponse.status, errorData);
       }
-
-      // Note: Members are now fetched from the organization data above
-      // No need for separate members API call
     } catch (err) {
       console.error('Error fetching organization data:', err);
       setError('Failed to fetch organization data');
@@ -158,7 +151,6 @@ const OrganizationPage = ({ user }) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = joinCode;
       document.body.appendChild(textArea);
@@ -172,93 +164,166 @@ const OrganizationPage = ({ user }) => {
 
   console.log('OrganizationPage user:', user);
   
-  if (user?.role !== 'admin') {
+  if (!user) {
     return (
-      <div style={{ 
-        padding: '40px', 
-        textAlign: 'center',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '12px',
-        margin: '20px'
-      }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{ 
+          padding: '40px', 
+          textAlign: 'center',
+          background: 'rgba(255,255,255,0.95)',
+          borderRadius: '16px',
+          margin: '20px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        }}
+      >
         <h2 style={{ color: '#dc3545', marginBottom: '10px' }}>Access Denied</h2>
-        <p style={{ color: '#6c757d' }}>Only administrators can access this page.</p>
-      </div>
+        <p style={{ color: '#6c757d' }}>Please log in to access this page.</p>
+      </motion.div>
     );
   }
 
   if (loading) {
     return (
-      <div style={{ 
-        padding: '40px', 
-        textAlign: 'center',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '12px',
-        margin: '20px'
-      }}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        style={{ 
+          padding: '40px', 
+          textAlign: 'center',
+          background: 'rgba(255,255,255,0.95)',
+          borderRadius: '16px',
+          margin: '20px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        }}
+      >
         <div style={{ fontSize: '18px', color: '#6c757d' }}>Loading organization data...</div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ 
-        backgroundColor: '#fff',
-        borderRadius: '12px',
-        padding: '30px',
-        marginBottom: '30px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e9ecef'
-      }}>
-        <h1 style={{ 
-          color: '#212529',
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        style={{ 
+          background: 'rgba(255,255,255,0.95)',
+          borderRadius: '20px',
+          padding: '32px',
           marginBottom: '30px',
-          fontSize: '28px',
-          fontWeight: '600'
-        }}>
-          Organization Management
-        </h1>
-        
-        {error && (
-          <div style={{ 
-            color: '#721c24', 
-            backgroundColor: '#f8d7da', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: '1px solid #f5c6cb'
-          }}>
-            {error}
+          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+          border: '1px solid rgba(255,255,255,0.2)',
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          style={{ marginBottom: '32px' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+            }}>
+              <Building size={24} />
+            </div>
+            <div>
+              <h1 style={{ 
+                color: '#1a1a1a',
+                margin: 0,
+                fontSize: '28px',
+                fontWeight: '700'
+              }}>
+                {user?.role === 'admin' ? 'Organization Management' : 'Organization Details'}
+              </h1>
+              <p style={{ 
+                color: '#6b7280',
+                margin: '4px 0 0 0',
+                fontSize: '16px'
+              }}>
+                Manage your team and organization settings
+              </p>
+            </div>
           </div>
-        )}
+        </motion.div>
+        
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              style={{ 
+                color: '#dc2626', 
+                background: '#fef2f2', 
+                padding: '16px', 
+                borderRadius: '12px', 
+                marginBottom: '24px',
+                border: '1px solid #fecaca',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}
+            >
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#dc2626' }} />
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {organization && (
-          <div style={{ 
-            backgroundColor: '#f8f9fa', 
-            padding: '25px', 
-            borderRadius: '10px', 
-            marginBottom: '30px',
-            border: '1px solid #dee2e6'
-          }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            style={{ 
+              background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', 
+              padding: '24px', 
+              borderRadius: '16px', 
+              marginBottom: '32px',
+              border: '1px solid #e2e8f0'
+            }}
+          >
             <h3 style={{ 
-              color: '#212529',
-              marginBottom: '20px',
+              color: '#1a1a1a',
+              marginBottom: '24px',
               fontSize: '20px',
-              fontWeight: '600'
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
             }}>
+              <Building size={20} />
               Organization Details
             </h3>
             <div style={{ 
               display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '20px',
-              marginBottom: '25px'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '24px',
+              marginBottom: '24px'
             }}>
-              <div>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                style={{
+                  background: 'rgba(255,255,255,0.8)',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                }}
+              >
                 <p style={{ 
-                  margin: '0 0 5px 0', 
-                  color: '#6c757d',
+                  margin: '0 0 8px 0', 
+                  color: '#6b7280',
                   fontSize: '14px',
                   fontWeight: '500'
                 }}>
@@ -266,17 +331,25 @@ const OrganizationPage = ({ user }) => {
                 </p>
                 <p style={{ 
                   margin: '0', 
-                  color: '#212529',
-                  fontSize: '16px',
+                  color: '#1a1a1a',
+                  fontSize: '18px',
                   fontWeight: '600'
                 }}>
                   {organization.name}
                 </p>
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                style={{
+                  background: 'rgba(255,255,255,0.8)',
+                  padding: '20px',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                }}
+              >
                 <p style={{ 
-                  margin: '0 0 5px 0', 
-                  color: '#6c757d',
+                  margin: '0 0 8px 0', 
+                  color: '#6b7280',
                   fontSize: '14px',
                   fontWeight: '500'
                 }}>
@@ -284,210 +357,258 @@ const OrganizationPage = ({ user }) => {
                 </p>
                 <p style={{ 
                   margin: '0', 
-                  color: '#212529',
-                  fontSize: '16px',
+                  color: '#1a1a1a',
+                  fontSize: '18px',
                   fontWeight: '600'
                 }}>
                   {members.length}
                 </p>
-              </div>
+              </motion.div>
             </div>
             
-            <div style={{ 
-              backgroundColor: '#e3f2fd', 
-              padding: '20px', 
-              borderRadius: '8px', 
-              border: '2px solid #2196f3'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-                <div style={{ flex: '1', minWidth: '300px' }}>
-                  <p style={{ 
-                    margin: '0 0 8px 0', 
-                    fontWeight: '600', 
-                    color: '#1976d2',
-                    fontSize: '16px'
-                  }}>
-                    Organization Join Code
-                  </p>
-                  <div style={{ 
-                    backgroundColor: '#fff',
-                    padding: '12px 16px',
-                    borderRadius: '6px',
-                    border: '1px solid #bbdefb',
-                    display: 'inline-block'
-                  }}>
-                    <span style={{ 
-                      fontSize: '20px', 
-                      letterSpacing: '3px',
-                      fontWeight: '700',
-                      color: '#1976d2',
-                      fontFamily: 'monospace'
+            {user?.role === 'admin' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                style={{ 
+                  background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', 
+                  padding: '24px', 
+                  borderRadius: '16px', 
+                  border: '2px solid #3b82f6'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+                  <div style={{ flex: '1', minWidth: '300px' }}>
+                    <p style={{ 
+                      margin: '0 0 12px 0', 
+                      fontWeight: '600', 
+                      color: '#1e40af',
+                      fontSize: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
                     }}>
-                      {joinCode || 'Loading...'}
-                    </span>
+                      <Copy size={16} />
+                      Organization Join Code
+                    </p>
+                    <div style={{ 
+                      background: 'rgba(255,255,255,0.9)',
+                      padding: '16px 20px',
+                      borderRadius: '12px',
+                      border: '2px solid #3b82f6',
+                      display: 'inline-block',
+                      marginBottom: '8px',
+                    }}>
+                      <span style={{ 
+                        fontSize: '24px', 
+                        letterSpacing: '4px',
+                        fontWeight: '700',
+                        color: '#1e40af',
+                        fontFamily: 'monospace'
+                      }}>
+                        {joinCode || 'Loading...'}
+                      </span>
+                    </div>
+                    <p style={{ 
+                      margin: '0', 
+                      fontSize: '14px', 
+                      color: '#6b7280',
+                      fontStyle: 'italic'
+                    }}>
+                      Share this code with employees to let them join your organization
+                    </p>
                   </div>
-                  <p style={{ 
-                    margin: '8px 0 0 0', 
-                    fontSize: '14px', 
-                    color: '#666',
-                    fontStyle: 'italic'
-                  }}>
-                    Share this code with employees to let them join your organization
-                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={copyJoinCode}
+                    style={{
+                      padding: '16px 24px',
+                      background: copied ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      minWidth: '120px',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                    {copied ? 'Copied!' : 'Copy Code'}
+                  </motion.button>
                 </div>
-                <button
-                  onClick={copyJoinCode}
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: copied ? '#4caf50' : '#2196f3',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    transition: 'background-color 0.2s ease',
-                    minWidth: '100px'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = copied ? '#45a049' : '#1976d2'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = copied ? '#4caf50' : '#2196f3'}
-                >
-                  {copied ? '✓ Copied!' : 'Copy Code'}
-                </button>
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            )}
+          </motion.div>
         )}
 
-        <div style={{ 
-          backgroundColor: '#fff',
-          borderRadius: '10px',
-          padding: '25px',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-          border: '1px solid #e9ecef'
-        }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          style={{ 
+            background: 'rgba(255,255,255,0.95)',
+            borderRadius: '16px',
+            padding: '24px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
+          }}
+        >
           <h3 style={{ 
-            color: '#212529',
-            marginBottom: '20px',
+            color: '#1a1a1a',
+            marginBottom: '24px',
             fontSize: '20px',
-            fontWeight: '600'
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
           }}>
+            <Users size={20} />
             Organization Members ({members.length})
           </h3>
           {members.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center',
-              padding: '40px',
-              color: '#6c757d'
-            }}>
-              <p style={{ fontSize: '16px' }}>No members found.</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={{ 
+                textAlign: 'center',
+                padding: '60px 20px',
+                color: '#6b7280'
+              }}
+            >
+              <Users size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+              <p style={{ fontSize: '16px', margin: 0 }}>No members found.</p>
+            </motion.div>
           ) : (
-            <div style={{ display: 'grid', gap: '15px' }}>
-              {members.map(member => (
-                <div key={member._id} style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  padding: '20px',
-                  border: '1px solid #e9ecef',
-                  borderRadius: '8px',
-                  backgroundColor: member.role === 'admin' ? '#f8f9fa' : '#fff',
-                  transition: 'box-shadow 0.2s ease'
-                }}
-                onMouseOver={(e) => e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'}
-                onMouseOut={(e) => e.target.style.boxShadow = 'none'}
-                >
-                  <div style={{ flex: '1' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '8px' }}>
+            <div style={{ display: 'grid', gap: '16px' }}>
+              <AnimatePresence>
+                {members.map((member, index) => (
+                  <motion.div
+                    key={member._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      padding: '20px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '16px',
+                      background: member.role === 'admin' ? 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)' : 'rgba(255,255,255,0.8)',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                    }}
+                  >
+                    <div style={{ flex: '1', display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '48px',
+                        height: '48px',
                         borderRadius: '50%',
-                        backgroundColor: member.role === 'admin' ? '#2196f3' : '#4caf50',
+                        background: member.role === 'admin' 
+                          ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
+                          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'white',
                         fontWeight: '600',
-                        fontSize: '16px'
+                        fontSize: '18px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                       }}>
                         {member.name?.charAt(0)?.toUpperCase() || member.email?.charAt(0)?.toUpperCase() || 'U'}
                       </div>
                       <div>
                         <p style={{ 
-                          margin: '0', 
+                          margin: '0 0 4px 0', 
                           fontWeight: '600',
-                          color: '#212529',
+                          color: '#1a1a1a',
                           fontSize: '16px'
                         }}>
                           {member.name || 'Unknown User'}
                         </p>
                         <p style={{ 
-                          margin: '5px 0 0 0', 
-                          color: '#6c757d',
+                          margin: '0', 
+                          color: '#6b7280',
                           fontSize: '14px'
                         }}>
                           {member.email}
                         </p>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <span style={{ 
-                        padding: '4px 12px', 
-                        backgroundColor: member.role === 'admin' ? '#2196f3' : '#4caf50',
+                        padding: '6px 12px', 
+                        background: member.role === 'admin' 
+                          ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
+                          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                         color: 'white',
                         borderRadius: '20px',
                         fontSize: '12px',
                         fontWeight: '600',
-                        textTransform: 'uppercase'
+                        textTransform: 'uppercase',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
                       }}>
+                        {member.role === 'admin' ? <Crown size={12} /> : <User size={12} />}
                         {member.role}
                       </span>
-                      {member._id !== user.id && (
+                      {user?.role === 'admin' && member._id !== user.id && (
                         <select
                           value={member.role}
                           onChange={(e) => changeRole(member._id, e.target.value)}
                           style={{
-                            padding: '4px 8px',
-                            border: '1px solid #ced4da',
-                            borderRadius: '4px',
+                            padding: '8px 12px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
                             fontSize: '12px',
-                            backgroundColor: '#fff'
+                            background: 'white',
+                            cursor: 'pointer',
                           }}
                         >
                           <option value="employee">Employee</option>
                           <option value="admin">Admin</option>
                         </select>
                       )}
+                      {user?.role === 'admin' && member._id !== user.id && (
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => removeMember(member._id)}
+                          style={{
+                            padding: '8px 12px',
+                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <Trash2 size={14} />
+                          Remove
+                        </motion.button>
+                      )}
                     </div>
-                  </div>
-                  {member._id !== user.id && (
-                    <button
-                      onClick={() => removeMember(member._id)}
-                      style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#dc3545',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        transition: 'background-color 0.2s ease'
-                      }}
-                      onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
-                      onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

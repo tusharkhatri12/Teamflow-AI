@@ -1,6 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import {
+  FileText,
+  MessageCircle,
+  Brain,
+  Building,
+  Users,
+} from 'lucide-react';
 import './Dashboard.css';
+
+const cardData = [
+  {
+    path: '/summaries',
+    title: 'Summaries',
+    descAdmin: 'View all daily standup summaries powered by AI.',
+    descEmployee: 'View your daily standup summaries powered by AI.',
+    icon: <FileText size={32} color="#2563eb" />,
+  },
+  {
+    path: '/messages',
+    title: 'Messages',
+    descAdmin: 'See all the raw user messages collected from Slack.',
+    descEmployee: 'See all your raw messages collected from Slack.',
+    icon: <MessageCircle size={32} color="#2563eb" />,
+  },
+  {
+    path: '/memory',
+    title: 'Memory',
+    descAdmin: 'Explore long-term memory and team progress.',
+    descEmployee: 'Explore your long-term memory and progress.',
+    icon: <Brain size={32} color="#2563eb" />,
+  },
+];
+
+const adminCards = [
+  {
+    path: '/organizations',
+    title: 'Organization',
+    desc: 'Manage your organization settings and join codes.',
+    icon: <Building size={32} color="#2563eb" />,
+  },
+  {
+    path: '/employees',
+    title: 'Employees',
+    desc: 'View and manage all employees in your organization.',
+    icon: <Users size={32} color="#2563eb" />,
+  },
+];
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -9,108 +56,66 @@ const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
     if (!token) {
       navigate('/login');
       return;
     }
-
-    // Use stored user data if available
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-    } else {
-      // Fetch user data from API
-      const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
-      fetch(`${apiUrl}/auth/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('Unauthorized');
-          return res.json();
-        })
-        .then(data => {
-          setUser(data.user);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          // Dispatch custom event to notify sidebar of user change
-          window.dispatchEvent(new CustomEvent('userStateChanged', { detail: { user: data.user } }));
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          navigate('/login');
-        });
     }
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
-  if (!user) return null; // Or add a loading spinner here
+  if (!user) return <div className="loader" />;
 
   return (
-    <div className="dashboard-root">
-      <div className="dashboard-main">
-        <div className="dashboard-header-row">
-          <h2 className="dashboard-title-large">👋 Welcome to Your Slack Standup Dashboard</h2>
-          <div className="dashboard-user-info">
-            <img
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || user?.email || 'U')}&background=23272f&color=fff&size=64`}
-              alt="Profile"
-              className="dashboard-user-avatar"
-            />
-            <span className="dashboard-user-name">{user?.name || user?.email}</span>
-          </div>
+    <div className="main" style={{ minHeight: '100vh', padding: '2em 0' }}>
+      <div className="flex-between gap-2" style={{ marginBottom: '2em', flexWrap: 'wrap' }}>
+        <h1 style={{ fontWeight: 700, fontSize: '2rem', color: '#181a20' }}>
+          👋 Welcome, {user.name || user.email}!
+        </h1>
+        <div className="flex gap-2 flex-center">
+          <img
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || user?.email || 'U')}&background=23272f&color=fff&size=64`}
+            alt="Profile"
+            style={{ width: 48, height: 48, borderRadius: '50%', background: '#23272f' }}
+          />
         </div>
-
-        <div className="dashboard-card-grid">
-          <div className="dashboard-card" onClick={() => navigate('/summaries')}>
-            <span className="dashboard-card-icon">📄</span>
-            <div>
-              <div className="dashboard-card-title">Summaries</div>
-              <div className="dashboard-card-desc">
-                {user?.role === 'admin' 
-                  ? 'View all daily standup summaries powered by AI.' 
-                  : 'View your daily standup summaries powered by AI.'
-                }
-              </div>
+      </div>
+      <div className="grid grid-cols-3 grid-gap-3" style={{ marginBottom: '2em' }}>
+        {cardData.map((card, idx) => (
+          <motion.div
+            key={card.path}
+            className="card shadow flex flex-col gap-2"
+            whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(37,99,235,0.13)' }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.05 * idx } }}
+            onClick={() => navigate(card.path)}
+            style={{ cursor: 'pointer', minHeight: 180, justifyContent: 'center', alignItems: 'flex-start' }}
+          >
+            <div className="flex flex-center" style={{ marginBottom: 12 }}>{card.icon}</div>
+            <div style={{ fontWeight: 600, fontSize: 20, marginBottom: 6 }}>{card.title}</div>
+            <div className="text-muted" style={{ fontSize: 15 }}>
+              {user?.role === 'admin' ? card.descAdmin : card.descEmployee}
             </div>
-          </div>
-          <div className="dashboard-card" onClick={() => navigate('/messages')}>
-            <span className="dashboard-card-icon">💬</span>
-            <div>
-              <div className="dashboard-card-title">Messages</div>
-              <div className="dashboard-card-desc">See all the raw user messages collected from Slack.</div>
-            </div>
-          </div>
-          <div className="dashboard-card" onClick={() => navigate('/memory')}>
-            <span className="dashboard-card-icon">🧠</span>
-            <div>
-              <div className="dashboard-card-title">Memory</div>
-              <div className="dashboard-card-desc">Explore long-term memory and team progress.</div>
-            </div>
-          </div>
-          
-          {user?.role === 'admin' && (
-            <>
-              <div className="dashboard-card" onClick={() => navigate('/organizations')}>
-                <span className="dashboard-card-icon">🏢</span>
-                <div>
-                  <div className="dashboard-card-title">Organization</div>
-                  <div className="dashboard-card-desc">Manage your organization settings and join codes.</div>
-                </div>
-              </div>
-              <div className="dashboard-card" onClick={() => navigate('/employees')}>
-                <span className="dashboard-card-icon">👥</span>
-                <div>
-                  <div className="dashboard-card-title">Employees</div>
-                  <div className="dashboard-card-desc">View and manage all employees in your organization.</div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+          </motion.div>
+        ))}
+        {user?.role === 'admin' && adminCards.map((card, idx) => (
+          <motion.div
+            key={card.path}
+            className="card shadow flex flex-col gap-2"
+            whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(37,99,235,0.13)' }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0, transition: { delay: 0.1 + 0.05 * idx } }}
+            onClick={() => navigate(card.path)}
+            style={{ cursor: 'pointer', minHeight: 180, justifyContent: 'center', alignItems: 'flex-start' }}
+          >
+            <div className="flex flex-center" style={{ marginBottom: 12 }}>{card.icon}</div>
+            <div style={{ fontWeight: 600, fontSize: 20, marginBottom: 6 }}>{card.title}</div>
+            <div className="text-muted" style={{ fontSize: 15 }}>{card.desc}</div>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
