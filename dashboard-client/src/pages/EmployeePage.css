@@ -1,27 +1,535 @@
-.employees-container {
-    padding: 2rem;
-    max-width: 700px;
-    margin: auto;
+/* Employee Page Responsive Styles */
+
+.employee-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.employee-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 30px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.employee-header {
+  margin-bottom: 32px;
+}
+
+.employee-header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.employee-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.employee-title {
+  color: #1a1a1a;
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 28px);
+  font-weight: 700;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.employee-subtitle {
+  color: #6b7280;
+  margin: 4px 0 0 0;
+  font-size: clamp(0.9rem, 2.5vw, 16px);
+  word-break: break-word;
+  white-space: normal;
+}
+
+.error-message {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #fecaca;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.invite-section {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 32px;
+  border: 1px solid #bbf7d0;
+}
+
+.invite-section h3 {
+  color: #1a1a1a;
+  margin-bottom: 24px;
+  font-size: clamp(1.1rem, 3vw, 20px);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.invite-form {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.invite-input-group {
+  flex: 1;
+  min-width: 280px;
+}
+
+.invite-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.invite-input-container {
+  position: relative;
+}
+
+.invite-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #fff;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.invite-input:focus {
+  border-color: #10b981;
+  outline: none;
+}
+
+.invite-input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.invite-button {
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.invite-button:disabled {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  cursor: not-allowed;
+}
+
+.invite-button .loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.employees-section {
+  background: rgba(255,255,255,0.95);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.employees-section h3 {
+  color: #1a1a1a;
+  margin-bottom: 24px;
+  font-size: clamp(1.1rem, 3vw, 20px);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.employees-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.employee-card-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.8);
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.employee-card-item.admin {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.employee-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.employee-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+.employee-avatar.admin {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.employee-details {
+  word-break: break-word;
+  white-space: normal;
+}
+
+.employee-name {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: clamp(0.9rem, 2.5vw, 16px);
+  word-break: break-word;
+  white-space: normal;
+}
+
+.employee-email {
+  margin: 0;
+  color: #6b7280;
+  font-size: clamp(0.8rem, 2vw, 14px);
+  word-break: break-word;
+  white-space: normal;
+}
+
+.employee-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.role-badge {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.role-badge.admin {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.role-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 12px;
+  background: white;
+  cursor: pointer;
+}
+
+.remove-button {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.empty-state svg {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .employee-container {
+    padding: 10px;
   }
-  
-  .employees-container ul {
-    list-style-type: none;
-    padding: 0;
+
+  .employee-card {
+    padding: 20px;
+    margin-bottom: 20px;
   }
-  
-  .employees-container li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+  .employee-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .employee-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .employee-title {
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
+  }
+
+  .employee-subtitle {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  }
+
+  .invite-section {
+    padding: 16px;
+  }
+
+  .invite-section h3 {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+  }
+
+  .invite-form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .invite-input-group {
+    min-width: 0;
+  }
+
+  .invite-label {
+    font-size: 13px;
+  }
+
+  .invite-input {
+    font-size: 14px;
+    padding: 14px 14px 14px 44px;
+  }
+
+  .invite-button {
+    padding: 14px 20px;
+    font-size: 13px;
+    min-width: 120px;
+  }
+
+  .employees-section {
+    padding: 16px;
+  }
+
+  .employees-section h3 {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+  }
+
+  .employee-card-item {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .employee-info {
+    min-width: 0;
+  }
+
+  .employee-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .employee-name {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  }
+
+  .employee-email {
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+  }
+
+  .employee-actions {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .role-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .role-select {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+
+  .remove-button {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .employee-container {
+    padding: 5px;
+  }
+
+  .employee-card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .employee-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .employee-title {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+  }
+
+  .employee-subtitle {
+    font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+  }
+
+  .invite-section {
     padding: 12px;
-    border-bottom: 1px solid #ccc;
   }
-  
-  .employees-container button {
-    background-color: red;
-    color: white;
-    padding: 6px 10px;
-    border: none;
-    cursor: pointer;
+
+  .invite-section h3 {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
   }
+
+  .invite-input {
+    font-size: 13px;
+    padding: 12px 12px 12px 40px;
+  }
+
+  .invite-button {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .employees-section {
+    padding: 12px;
+  }
+
+  .employees-section h3 {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+  }
+
+  .employee-card-item {
+    padding: 12px;
+  }
+
+  .employee-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .employee-name {
+    font-size: clamp(0.75rem, 2.5vw, 0.85rem);
+  }
+
+  .employee-email {
+    font-size: clamp(0.65rem, 2vw, 0.75rem);
+  }
+
+  .role-badge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .role-select {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+
+  .remove-button {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
   

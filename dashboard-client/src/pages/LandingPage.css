@@ -3,48 +3,108 @@ body {
     font-family: 'Inter', sans-serif;
     background: #000;
     color: #fff;
+    overflow-x: hidden;
   }
  
   
   .hero {
-    padding: 12rem 3rem 5rem;
+    padding: 8rem 2rem 4rem;
     text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
   
   .hero h1 {
-    font-size: 9.5rem;
+    font-size: clamp(2.5rem, 8vw, 6rem);
     font-weight: 900;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    word-break: break-word;
+    white-space: normal;
   }
+
+  .highlight {
+    color: white;
+    background: linear-gradient(90deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .subtitle {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    margin-bottom: 1rem;
+    color: #ccc;
+    font-weight: 500;
+  }
+  
+  .description {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: #aaa;
+    line-height: 1.6;
+    padding: 0 1rem;
+  }
+  
+  .waitlist-btn {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 0.75rem 2rem;
+    font-weight: 700;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    min-width: 200px;
+  }
+  
+  .waitlist-btn.glow:hover {
+    background: #fff;
+    color: #000;
+    box-shadow: 0 0 20px #fff;
+  }
+
   .features-section {
-    padding: 80px 40px;
+    padding: 4rem 2rem;
     background-color: #0a0a0a;
     color: white;
   }
   
   .features-heading {
     text-align: center;
-    font-size: 2.8rem;
+    font-size: clamp(1.5rem, 5vw, 2.8rem);
     font-weight: 900;
-    margin-bottom: 70px;
+    margin-bottom: 3rem;
     letter-spacing: 1px;
     text-shadow: 0 2px 16px #000a;
+    line-height: 1.2;
+    word-break: break-word;
+    white-space: normal;
   }
   
   .feature-step {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 100px;
+    margin-bottom: 4rem;
     flex-wrap: wrap;
-    min-height: 340px;
-    gap: 32px;
+    min-height: auto;
+    gap: 2rem;
     border-radius: 24px;
     background: linear-gradient(90deg, #111 60%, #181818 100%);
     box-shadow: 0 4px 32px 0 #0004;
-    padding: 40px 32px;
+    padding: 2rem;
     position: relative;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .feature-step:not(:last-child)::after {
@@ -52,7 +112,7 @@ body {
     position: absolute;
     left: 10%;
     right: 10%;
-    bottom: -40px;
+    bottom: -2rem;
     height: 2px;
     background: linear-gradient(90deg, #222 0%, #444 100%);
     opacity: 0.3;
@@ -60,9 +120,9 @@ body {
   }
   
   .step-text {
-    flex: 1.2;
-    min-width: 320px;
-    padding-right: 40px;
+    flex: 1;
+    min-width: 280px;
+    padding-right: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -72,39 +132,44 @@ body {
     color: #fff;
     font-weight: bold;
     letter-spacing: 1px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     opacity: 0.7;
     margin-bottom: 0.5rem;
   }
   
   .step-title {
-    font-size: 2.2rem;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
     font-weight: 800;
     margin: 10px 0 18px 0;
     letter-spacing: 0.5px;
+    line-height: 1.2;
+    word-break: break-word;
+    white-space: normal;
   }
   
   .step-description {
-    font-size: 1.15rem;
+    font-size: clamp(0.9rem, 2.5vw, 1.15rem);
     color: #cccccc;
     line-height: 1.7;
-    max-width: 700px;
+    max-width: 100%;
+    word-break: break-word;
+    white-space: normal;
   }
   
   .step-illustration {
     flex: 1;
-    min-width: 220px;
-    padding: 1.5rem 1rem 1.5rem 2rem;
+    min-width: 200px;
+    padding: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
 .step-illustration img {
-  max-width: 370px;
+  max-width: 100%;
   width: 100%;
   height: auto;
-  max-height: 420px;
+  max-height: 300px;
   object-fit: contain;
   display: block;
   border-radius: 18px;
@@ -118,68 +183,207 @@ body {
   box-shadow: 0 8px 48px 0 #fff2, 0 0 0 2.5px #fff;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 768px) {
+  .hero {
+    padding: 4rem 1rem 2rem;
+    min-height: 80vh;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .subtitle {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+  }
+
+  .description {
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    padding: 0 0.5rem;
+  }
+
+  .waitlist-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    min-width: 180px;
+  }
+
+  .features-section {
+    padding: 2rem 1rem;
+  }
+
+  .features-heading {
+    font-size: clamp(1.3rem, 5vw, 1.8rem);
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+  }
+
   .feature-step {
     flex-direction: column;
-    align-items: center;
-    padding: 32px 8px;
-    min-height: 0;
+    align-items: stretch;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    min-height: auto;
   }
+
   .step-text {
     padding-right: 0;
-    text-align: center;
-    align-items: center;
+    text-align: left;
+    align-items: flex-start;
+    min-width: 0;
+    order: 1;
   }
+
+  .step-title {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+    margin: 8px 0 12px 0;
+  }
+
+  .step-description {
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    line-height: 1.5;
+  }
+
   .step-illustration {
-    margin-top: 2rem;
+    order: 2;
+    margin-top: 0;
+    padding: 0.5rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .step-illustration img {
+    max-width: 100%;
+    max-height: 200px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .section {
+    padding: 2rem 1rem;
+  }
+
+  .section h2 {
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .cards, .pricing-cards {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 0.5rem;
+  }
+
+  .card, .plan-card, .plan-card.popular {
+    width: 100%;
+    max-width: 320px;
+    padding: 1.5rem 1rem;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  .plan-card h3 {
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+  }
+
+  .plan-card.popular {
+    min-height: auto;
+    transform: none;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .waitlist-form {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .waitlist-form input[type="email"],
+  .waitlist-form .waitlist-btn {
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .waitlist-desc {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .footer-content {
+    padding: 0 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 3rem 0.5rem 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+  }
+
+  .features-section {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .feature-step {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .step-text {
     padding: 0;
   }
+
+  .step-title {
+    font-size: clamp(1.1rem, 4vw, 1.3rem);
+  }
+
+  .step-description {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  }
+
   .step-illustration img {
-    max-width: 90vw;
-    max-height: 300px;
+    max-height: 150px;
+    padding: 6px;
+  }
+
+  .section {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .card, .plan-card, .plan-card.popular {
+    padding: 1rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .waitlist-form {
+    padding: 0 0.5rem;
+  }
+
+  .waitlist-form input[type="email"],
+  .waitlist-form .waitlist-btn {
+    font-size: 0.85rem;
+    padding: 0.7rem 0.8rem;
   }
 }
    
-  
-  .highlight {
-    color: white;
-    background: linear-gradient(90deg, #fff 0%, #aaa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  
-  .subtitle {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    color: #ccc;
-  }
-  
-  .description {
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    font-size: 1rem;
-    color: #aaa;
-  }
-  
-  .waitlist-btn {
-    background: transparent;
-    color: white;
-    border: 1px solid white;
-    padding: 0.75rem 7.5rem;
-    font-weight: 700;
-    font-size: 1.25rem;
-    border-radius: 8px;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .waitlist-btn.glow:hover {
-    background: #fff;
-    color: #000;
-    box-shadow: 0 0 20px #fff;
-  }
-  
   .section {
-    padding: 6rem 3rem;
+    padding: 4rem 2rem;
     text-align: center;
   }
   
@@ -188,14 +392,17 @@ body {
   }
   
   .section h2 {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
     margin-bottom: 2rem;
     font-weight: bold;
     text-transform: uppercase;
+    line-height: 1.2;
+    word-break: break-word;
+    white-space: normal;
   }
   
   .section#pricing h2 {
-    margin-bottom: 3.5rem;
+    margin-bottom: 3rem;
   }
   
   .cards {
@@ -227,46 +434,61 @@ body {
 .pricing-cards {
   display: flex;
   justify-content: center;
-  gap: 2.5rem;
+  gap: 2rem;
   flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .pricing-cards .plan-card {
   background: #111;
   border: 1.5px solid #222;
-  padding: 2.5rem 2rem;
+  padding: 2rem 1.5rem;
   border-radius: 18px;
-  width: 340px;
-  min-height: 420px;
+  width: 320px;
+  min-height: 400px;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1rem;
   box-shadow: 0 0 18px 0 rgba(255,255,255,0.04);
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   transition: box-shadow 0.2s, border 0.2s;
+  box-sizing: border-box;
 }
 
 .pricing-cards .plan-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1.2rem;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
   color: #bdbdbd;
+  text-align: center;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.pricing-cards .plan-card p {
+  text-align: center;
+  margin-bottom: 1rem;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .pricing-cards .plan-card ul {
   list-style: none;
   padding: 0;
-  margin: 1.2rem 0 1.8rem 0;
+  margin: 1rem 0 1.5rem 0;
   color: #ccc;
   text-align: left;
   width: 100%;
 }
 
 .pricing-cards .plan-card ul li {
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.6rem;
   padding-left: 1.2em;
   position: relative;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .pricing-cards .plan-card ul li:before {
@@ -274,20 +496,22 @@ body {
   color: #fff;
   position: absolute;
   left: 0;
-  font-size: 1.1em;
+  font-size: 1em;
 }
 
 .pricing-cards .plan-card button {
   background: #fff;
   color: #111;
   border: none;
-  padding: 1rem 2.5rem;
+  padding: 0.8rem 2rem;
   border-radius: 8px;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin-top: auto;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .pricing-cards .plan-card button.glow {
@@ -297,51 +521,54 @@ body {
 }
 
 .pricing-cards .plan-card.popular {
-  border: 2.5px solid #fff;
+  border: 2px solid #fff;
   box-shadow: 0 0 32px 0 #fff4, 0 2px 12px 0 #0006;
   z-index: 2;
-  width: 390px;
-  min-height: 480px;
-  transform: scale(1.07);
+  width: 360px;
+  min-height: 450px;
+  transform: scale(1.05);
 }
 
 .pricing-cards .plan-card.popular h3 {
   color: #fff;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 800;
 }
 
 .pricing-cards .plan-card.popular::before {
   content: 'MOST POPULAR';
   position: absolute;
-  top: -22px;
+  top: -18px;
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
   color: #111;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  padding: 0.3em 1.5em;
-  border-radius: 1.2em;
-  letter-spacing: 1px;
+  padding: 0.3em 1.2em;
+  border-radius: 1em;
+  letter-spacing: 0.5px;
   box-shadow: 0 2px 8px 0 #0002;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 768px) {
   .pricing-cards {
     flex-direction: column;
     align-items: center;
+    gap: 1.5rem;
   }
+  
   .pricing-cards .plan-card,
   .pricing-cards .plan-card.popular {
-    width: 95vw;
-    min-width: 0;
-    max-width: 420px;
-    margin-bottom: 2.5rem;
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 0;
     transform: none;
+    min-height: auto;
   }
+  
   .pricing-cards .plan-card.popular {
-    min-height: 420px;
+    min-height: auto;
   }
 }
   
@@ -352,6 +579,7 @@ body {
     margin-bottom: 1rem;
     border-radius: 5px;
     border: none;
+    box-sizing: border-box;
   }
   
   .scroll-reveal {
@@ -379,10 +607,13 @@ body {
   }
   
   .waitlist-desc {
-    font-size: 1.15rem;
+    font-size: clamp(1rem, 2.5vw, 1.15rem);
     color: #ccc;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     margin-top: 0.5rem;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: normal;
   }
 
 .waitlist-form {
@@ -392,11 +623,12 @@ body {
   gap: 0;
   max-width: 600px;
   margin: 0 auto;
+  flex-wrap: wrap;
 }
 
 .waitlist-form input[type="email"] {
-  padding: 1.1rem 1.5rem;
-  font-size: 1.1rem;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
   border: none;
   border-radius: 8px 0 0 8px;
   outline: none;
@@ -405,6 +637,7 @@ body {
   color: #111;
   transition: box-shadow 0.2s;
   box-shadow: 0 2px 12px 0 #0002;
+  box-sizing: border-box;
 }
 
 .waitlist-form input[type="email"]:focus {
@@ -417,11 +650,12 @@ body {
   border-left: none;
   background: #111;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
-  padding: 1.1rem 2.5rem;
+  padding: 1rem 2rem;
   transition: background 0.2s, color 0.2s;
   box-shadow: 0 2px 12px 0 #0002;
+  cursor: pointer;
 }
 
 .waitlist-form .waitlist-btn.glow:hover {
@@ -441,7 +675,7 @@ body {
 
 .footer {
   background: #111;
-  padding: 2.5rem 0 1.2rem 0;
+  padding: 2rem 0 1rem 0;
   margin-top: 0;
   border-top: none;
 }
@@ -452,13 +686,15 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.2rem;
+  gap: 1rem;
+  padding: 0 1rem;
 }
 
 .trademark {
   color: #888;
-  font-size: 1.05rem;
+  font-size: 1rem;
   letter-spacing: 1px;
+  text-align: center;
 }
 
 .footer-socials {
@@ -479,122 +715,9 @@ body {
 }
 
 .footer-socials svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: block;
-}
-
-@media (max-width: 700px) {
-  .waitlist-form {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .waitlist-form input[type="email"],
-  .waitlist-form .waitlist-btn {
-    border-radius: 8px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .footer-content {
-    padding: 0 1rem;
-  }
-  .hero {
-    padding: 4rem 0.5rem 1.5rem;
-  }
-  .hero h1 {
-    font-size: 2rem;
-    margin-bottom: 0.7rem;
-    word-break: break-word;
-    white-space: normal;
-    line-height: 1.1;
-  }
-  .features-heading {
-    font-size: 1.1rem;
-    margin-bottom: 1.2rem;
-    word-break: break-word;
-    white-space: normal;
-    line-height: 1.2;
-  }
-  .features-section {
-    padding: 32px 4px;
-  }
-  .feature-step {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 18px 2px;
-    min-height: 0;
-    gap: 16px;
-    box-shadow: 0 2px 10px 0 #0002;
-  }
-  .step-text {
-    padding-right: 0;
-    text-align: left;
-    align-items: flex-start;
-    min-width: 0;
-    font-size: 0.98rem;
-  }
-  .step-title {
-    font-size: 1.05rem;
-    margin: 8px 0 10px 0;
-    word-break: break-word;
-    white-space: normal;
-    line-height: 1.2;
-  }
-  .step-description {
-    font-size: 0.95rem;
-    max-width: 98vw;
-    word-break: break-word;
-    white-space: normal;
-    line-height: 1.4;
-  }
-  .step-illustration {
-    margin-top: 0.5rem;
-    padding: 0;
-    min-width: 0;
-    width: 100%;
-    justify-content: flex-start;
-  }
-  .step-illustration img {
-    max-width: 90vw;
-    max-height: 160px;
-    min-width: 0;
-    width: 100%;
-    height: auto;
-    padding: 4px;
-    border-radius: 10px;
-  }
-  .section {
-    padding: 2.5rem 0.5rem;
-  }
-  .cards, .pricing-cards {
-    flex-direction: column;
-    align-items: center;
-    gap: 1.2rem;
-  }
-  .card, .plan-card, .plan-card.popular {
-    width: 98vw;
-    min-width: 0;
-    max-width: 340px;
-    padding: 1rem 0.5rem;
-    font-size: 0.98rem;
-    box-sizing: border-box;
-    word-break: break-word;
-  }
-  .plan-card h3 {
-    font-size: 1.1rem;
-  }
-  .plan-card.popular {
-    min-height: unset;
-    transform: none;
-  }
-  .waitlist-form input[type="email"], .waitlist-form .waitlist-btn {
-    font-size: 1rem;
-    padding: 0.7rem 0.8rem;
-  }
-  .footer-content {
-    padding: 0 0.2rem;
-    font-size: 0.95rem;
-  }
 }
   
   

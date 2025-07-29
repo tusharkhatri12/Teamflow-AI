@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Crown, Copy, Check, Trash2, Building, User, Settings } from 'lucide-react';
+import './OrganizationPages.css';
 
 const OrganizationPage = ({ user }) => {
   const [organization, setOrganization] = useState(null);
@@ -169,14 +170,7 @@ const OrganizationPage = ({ user }) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{ 
-          padding: '40px', 
-          textAlign: 'center',
-          background: 'rgba(255,255,255,0.95)',
-          borderRadius: '16px',
-          margin: '20px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        }}
+        className="organization-card"
       >
         <h2 style={{ color: '#dc3545', marginBottom: '10px' }}>Access Denied</h2>
         <p style={{ color: '#6c757d' }}>Please log in to access this page.</p>
@@ -189,14 +183,7 @@ const OrganizationPage = ({ user }) => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        style={{ 
-          padding: '40px', 
-          textAlign: 'center',
-          background: 'rgba(255,255,255,0.95)',
-          borderRadius: '16px',
-          margin: '20px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        }}
+        className="organization-card"
       >
         <div style={{ fontSize: '18px', color: '#6c757d' }}>Loading organization data...</div>
       </motion.div>
@@ -204,53 +191,28 @@ const OrganizationPage = ({ user }) => {
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="organization-container">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        style={{ 
-          background: 'rgba(255,255,255,0.95)',
-          borderRadius: '20px',
-          padding: '32px',
-          marginBottom: '30px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-          border: '1px solid rgba(255,255,255,0.2)',
-        }}
+        className="organization-card"
       >
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{ marginBottom: '32px' }}
+          className="organization-header"
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-            }}>
+          <div className="organization-header-content">
+            <div className="organization-icon">
               <Building size={24} />
             </div>
             <div>
-              <h1 style={{ 
-                color: '#1a1a1a',
-                margin: 0,
-                fontSize: '28px',
-                fontWeight: '700'
-              }}>
+              <h1 className="organization-title">
                 {user?.role === 'admin' ? 'Organization Management' : 'Organization Details'}
               </h1>
-              <p style={{ 
-                color: '#6b7280',
-                margin: '4px 0 0 0',
-                fontSize: '16px'
-              }}>
+              <p className="organization-subtitle">
                 Manage your team and organization settings
               </p>
             </div>
@@ -263,17 +225,7 @@ const OrganizationPage = ({ user }) => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              style={{ 
-                color: '#dc2626', 
-                background: '#fef2f2', 
-                padding: '16px', 
-                borderRadius: '12px', 
-                marginBottom: '24px',
-                border: '1px solid #fecaca',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-              }}
+              className="error-message"
             >
               <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#dc2626' }} />
               {error}
@@ -286,81 +238,32 @@ const OrganizationPage = ({ user }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            style={{ 
-              background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', 
-              padding: '24px', 
-              borderRadius: '16px', 
-              marginBottom: '32px',
-              border: '1px solid #e2e8f0'
-            }}
+            className="organization-details"
           >
-            <h3 style={{ 
-              color: '#1a1a1a',
-              marginBottom: '24px',
-              fontSize: '20px',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-            }}>
+            <h3>
               <Building size={20} />
               Organization Details
             </h3>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '24px',
-              marginBottom: '24px'
-            }}>
+            <div className="details-grid">
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                style={{
-                  background: 'rgba(255,255,255,0.8)',
-                  padding: '20px',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                }}
+                className="detail-card"
               >
-                <p style={{ 
-                  margin: '0 0 8px 0', 
-                  color: '#6b7280',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}>
+                <p className="detail-label">
                   Organization Name
                 </p>
-                <p style={{ 
-                  margin: '0', 
-                  color: '#1a1a1a',
-                  fontSize: '18px',
-                  fontWeight: '600'
-                }}>
+                <p className="detail-value">
                   {organization.name}
                 </p>
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                style={{
-                  background: 'rgba(255,255,255,0.8)',
-                  padding: '20px',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                }}
+                className="detail-card"
               >
-                <p style={{ 
-                  margin: '0 0 8px 0', 
-                  color: '#6b7280',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}>
+                <p className="detail-label">
                   Total Members
                 </p>
-                <p style={{ 
-                  margin: '0', 
-                  color: '#1a1a1a',
-                  fontSize: '18px',
-                  fontWeight: '600'
-                }}>
+                <p className="detail-value">
                   {members.length}
                 </p>
               </motion.div>
@@ -371,51 +274,20 @@ const OrganizationPage = ({ user }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                style={{ 
-                  background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', 
-                  padding: '24px', 
-                  borderRadius: '16px', 
-                  border: '2px solid #3b82f6'
-                }}
+                className="join-code-section"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-                  <div style={{ flex: '1', minWidth: '300px' }}>
-                    <p style={{ 
-                      margin: '0 0 12px 0', 
-                      fontWeight: '600', 
-                      color: '#1e40af',
-                      fontSize: '16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}>
+                <div className="join-code-content">
+                  <div className="join-code-info">
+                    <p className="join-code-title">
                       <Copy size={16} />
                       Organization Join Code
                     </p>
-                    <div style={{ 
-                      background: 'rgba(255,255,255,0.9)',
-                      padding: '16px 20px',
-                      borderRadius: '12px',
-                      border: '2px solid #3b82f6',
-                      display: 'inline-block',
-                      marginBottom: '8px',
-                    }}>
-                      <span style={{ 
-                        fontSize: '24px', 
-                        letterSpacing: '4px',
-                        fontWeight: '700',
-                        color: '#1e40af',
-                        fontFamily: 'monospace'
-                      }}>
+                    <div className="join-code-display">
+                      <span className="join-code-text">
                         {joinCode || 'Loading...'}
                       </span>
                     </div>
-                    <p style={{ 
-                      margin: '0', 
-                      fontSize: '14px', 
-                      color: '#6b7280',
-                      fontStyle: 'italic'
-                    }}>
+                    <p className="join-code-description">
                       Share this code with employees to let them join your organization
                     </p>
                   </div>
@@ -423,21 +295,7 @@ const OrganizationPage = ({ user }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={copyJoinCode}
-                    style={{
-                      padding: '16px 24px',
-                      background: copied ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      minWidth: '120px',
-                      justifyContent: 'center',
-                    }}
+                    className={`copy-button ${copied ? 'copied' : ''}`}
                   >
                     {copied ? <Check size={16} /> : <Copy size={16} />}
                     {copied ? 'Copied!' : 'Copy Code'}
@@ -452,23 +310,9 @@ const OrganizationPage = ({ user }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          style={{ 
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: '16px',
-            padding: '24px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-            border: '1px solid rgba(255,255,255,0.2)',
-          }}
+          className="members-section"
         >
-          <h3 style={{ 
-            color: '#1a1a1a',
-            marginBottom: '24px',
-            fontSize: '20px',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-          }}>
+          <h3>
             <Users size={20} />
             Organization Members ({members.length})
           </h3>
@@ -476,17 +320,13 @@ const OrganizationPage = ({ user }) => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              style={{ 
-                textAlign: 'center',
-                padding: '60px 20px',
-                color: '#6b7280'
-              }}
+              className="empty-state"
             >
-              <Users size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-              <p style={{ fontSize: '16px', margin: 0 }}>No members found.</p>
+              <Users size={48} />
+              <p>No members found.</p>
             </motion.div>
           ) : (
-            <div style={{ display: 'grid', gap: '16px' }}>
+            <div className="members-grid">
               <AnimatePresence>
                 {members.map((member, index) => (
                   <motion.div
@@ -495,69 +335,23 @@ const OrganizationPage = ({ user }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
                     whileHover={{ scale: 1.02, y: -2 }}
-                    style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      padding: '20px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '16px',
-                      background: member.role === 'admin' ? 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)' : 'rgba(255,255,255,0.8)',
-                      transition: 'all 0.2s',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                    }}
+                    className={`member-card ${member.role === 'admin' ? 'admin' : ''}`}
                   >
-                    <div style={{ flex: '1', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        background: member.role === 'admin' 
-                          ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
-                          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontWeight: '600',
-                        fontSize: '18px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      }}>
+                    <div className="member-info">
+                      <div className={`member-avatar ${member.role === 'admin' ? 'admin' : ''}`}>
                         {member.name?.charAt(0)?.toUpperCase() || member.email?.charAt(0)?.toUpperCase() || 'U'}
                       </div>
-                      <div>
-                        <p style={{ 
-                          margin: '0 0 4px 0', 
-                          fontWeight: '600',
-                          color: '#1a1a1a',
-                          fontSize: '16px'
-                        }}>
+                      <div className="member-details">
+                        <p className="member-name">
                           {member.name || 'Unknown User'}
                         </p>
-                        <p style={{ 
-                          margin: '0', 
-                          color: '#6b7280',
-                          fontSize: '14px'
-                        }}>
+                        <p className="member-email">
                           {member.email}
                         </p>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ 
-                        padding: '6px 12px', 
-                        background: member.role === 'admin' 
-                          ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' 
-                          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        color: 'white',
-                        borderRadius: '20px',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        textTransform: 'uppercase',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}>
+                    <div className="member-actions">
+                      <span className={`role-badge ${member.role === 'admin' ? 'admin' : ''}`}>
                         {member.role === 'admin' ? <Crown size={12} /> : <User size={12} />}
                         {member.role}
                       </span>
@@ -565,14 +359,7 @@ const OrganizationPage = ({ user }) => {
                         <select
                           value={member.role}
                           onChange={(e) => changeRole(member._id, e.target.value)}
-                          style={{
-                            padding: '8px 12px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            background: 'white',
-                            cursor: 'pointer',
-                          }}
+                          className="role-select"
                         >
                           <option value="employee">Employee</option>
                           <option value="admin">Admin</option>
@@ -583,19 +370,7 @@ const OrganizationPage = ({ user }) => {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => removeMember(member._id)}
-                          style={{
-                            padding: '8px 12px',
-                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
+                          className="remove-button"
                         >
                           <Trash2 size={14} />
                           Remove
