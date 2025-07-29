@@ -120,18 +120,26 @@ exports.removeMember = async (req, res) => {
 // GET /api/organizations/members
 exports.getOrganizationMembers = async (req, res) => {
   try {
+    console.log('User organization:', req.user.organization);
+    console.log('User ID:', req.user._id);
+    
     const org = await Organization.findById(req.user.organization).populate('members', 'name email role');
+    
+    console.log('Found organization:', org);
     
     if (!org) {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
-    if (String(org.admin) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Only admin can view members' });
+    // Allow both admin and members to view the member list
+    if (!org.members.includes(req.user._id)) {
+      return res.status(403).json({ message: 'You are not a member of this organization' });
     }
 
+    console.log('Organization members:', org.members);
     res.status(200).json({ members: org.members });
   } catch (err) {
+    console.error('Error in getOrganizationMembers:', err);
     res.status(500).json({ message: 'Error fetching members', error: err.message });
   }
 };
@@ -139,18 +147,24 @@ exports.getOrganizationMembers = async (req, res) => {
 // GET /api/organizations/join-code
 exports.getJoinCode = async (req, res) => {
   try {
+    console.log('Getting join code for user:', req.user._id);
     const org = await Organization.findById(req.user.organization);
+    
+    console.log('Found organization for join code:', org);
     
     if (!org) {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
+    // Only admin can view join code
     if (String(org.admin) !== String(req.user._id)) {
       return res.status(403).json({ message: 'Only admin can view join code' });
     }
 
+    console.log('Join code:', org.joinCode);
     res.status(200).json({ joinCode: org.joinCode });
   } catch (err) {
+    console.error('Error in getJoinCode:', err);
     res.status(500).json({ message: 'Error fetching join code', error: err.message });
   }
 };

@@ -19,7 +19,20 @@ const OrganizationPage = ({ user }) => {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
       
+      console.log('User:', user);
       console.log('User organization:', user.organization);
+      console.log('Token:', token ? 'Present' : 'Missing');
+      
+      // Test auth endpoint
+      try {
+        const testResponse = await fetch(`${apiUrl}/api/organizations/test`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const testData = await testResponse.json();
+        console.log('Auth test response:', testData);
+      } catch (err) {
+        console.error('Auth test failed:', err);
+      }
       
       if (!user.organization) {
         setError('No organization found for this user');
@@ -43,7 +56,8 @@ const OrganizationPage = ({ user }) => {
           setJoinCode(orgData.joinCode);
         }
       } else {
-        console.error('Failed to fetch organization:', orgResponse.status);
+        const errorData = await orgResponse.json().catch(() => ({}));
+        console.error('Failed to fetch organization:', orgResponse.status, errorData);
       }
 
       // Fetch organization join code
@@ -58,7 +72,8 @@ const OrganizationPage = ({ user }) => {
         console.log('Join code data:', joinCodeData);
         setJoinCode(joinCodeData.joinCode);
       } else {
-        console.error('Failed to fetch join code:', joinCodeResponse.status);
+        const errorData = await joinCodeResponse.json().catch(() => ({}));
+        console.error('Failed to fetch join code:', joinCodeResponse.status, errorData);
       }
 
       // Fetch organization members
@@ -73,7 +88,8 @@ const OrganizationPage = ({ user }) => {
         console.log('Members data:', membersData);
         setMembers(membersData.members);
       } else {
-        console.error('Failed to fetch members:', membersResponse.status);
+        const errorData = await membersResponse.json().catch(() => ({}));
+        console.error('Failed to fetch members:', membersResponse.status, errorData);
       }
     } catch (err) {
       console.error('Error fetching organization data:', err);
