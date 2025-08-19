@@ -132,7 +132,8 @@ exports.getOrganizationMembers = async (req, res) => {
     }
 
     // Allow both admin and members to view the member list
-    if (!org.members.includes(req.user._id)) {
+    const isMember = org.members.some(m => String((m && m._id) ? m._id : m) === String(req.user._id));
+    if (!isMember) {
       return res.status(403).json({ message: 'You are not a member of this organization' });
     }
 

@@ -6,7 +6,7 @@ const { nanoid } = require('nanoid'); // npm i nanoid
 exports.getBoardByOrg = async (req, res) => {
   try {
     const { orgId } = req.params;
-    const { assigneeId } = req.query;
+    const { assigneeId, sprintId } = req.query;
     const userOrgId = req.user?.organization?._id || req.user?.organization;
     if (String(userOrgId) !== String(orgId)) {
       return res.status(403).json({ message: 'Forbidden: Not a member of this organization' });
@@ -17,14 +17,18 @@ exports.getBoardByOrg = async (req, res) => {
 
     const isAdmin = req.user?.role === 'admin' || req.user?.role === 'owner';
     const effectiveAssignee = isAdmin ? assigneeId : (req.user?._id?.toString());
-    if (!effectiveAssignee) {
+    if (!effectiveAssignee && !sprintId) {
       return res.json(board);
     }
 
     // Filter tasks by assignee and adjust columns' taskIds accordingly
     const allowedTaskIds = new Set(
       board.tasks
-        .filter(t => String(t.assigneeId || '') === String(effectiveAssignee))
+        .filter(t => {
+          const assigneePass = effectiveAssignee ? String(t.assigneeId || '') === String(effectiveAssignee) : true;
+          const sprintPass = sprintId ? String(t.sprintId || '') === String(sprintId) : true;
+          return assigneePass && sprintPass;
+        })
         .map(t => t._id)
     );
 
@@ -65,6 +69,7 @@ exports.createBoard = async (req, res) => {
     const board = new Board({
       orgId,
       name: name || 'Main Board',
+      sprints: [],
       columns: defaultColumns,
       tasks: []
     });
@@ -95,7 +100,7 @@ exports.addColumn = async (req, res) => {
 exports.addTask = async (req, res) => {
   try {
     const { boardId } = req.params;
-    const { columnId, title, description, assigneeId, dueDate } = req.body;
+    const { columnId, title, description, assigneeId, dueDate, sprintId, labels = [], priority = 'medium' } = req.body;
     const board = await Board.findById(boardId);
     if (!board) return res.status(404).json({ message: 'Board not found' });
 
@@ -112,6 +117,9 @@ exports.addTask = async (req, res) => {
       assigneeId: (req.user?.role === 'admin' || req.user?.role === 'owner')
         ? (assigneeId || req.user._id)
         : req.user._id,
+      sprintId: sprintId || null,
+      labels,
+      priority,
       dueDate: dueDate ? new Date(dueDate) : null
     };
     board.tasks.push(task);
@@ -227,6 +235,115 @@ exports.reorderColumns = async (req, res) => {
     board.columns.splice(destIndex, 0, col);
     await board.save();
     res.json(board);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Sprints
+exports.createSprint = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+    const { name, startDate, endDate, active } = req.body;
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ message: 'Board not found' });
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const sprint = { _id: new (require('mongoose').Types.ObjectId)(), name, startDate, endDate, active: !!active };
+    if (active) {
+      board.sprints.forEach(s => s.active = false);
+    }
+    board.sprints.push(sprint);
+    await board.save();
+    res.status(201).json(sprint);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.listSprints = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ message: 'Board not found' });
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    res.json(board.sprints || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateSprint = async (req, res) => {
+  try {
+    const { boardId, sprintId } = req.params;
+    const updates = req.body;
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ message: 'Board not found' });
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    const sprint = board.sprints.id(sprintId);
+    if (!sprint) return res.status(404).json({ message: 'Sprint not found' });
+    if (updates.active === true) {
+      board.sprints.forEach(s => s.active = false);
+    }
+    Object.assign(sprint, updates);
+    await board.save();
+    res.json(sprint);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Comments
+exports.addComment = async (req, res) => {
+  try {
+    const { boardId, taskId } = req.params;
+    const { text } = req.body;
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ message: 'Board not found' });
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    const task = board.tasks.find(t => t._id === taskId);
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+    const comment = {
+      id: require('nanoid').nanoid(10),
+      authorId: req.user._id,
+      text,
+      createdAt: new Date()
+    };
+    task.comments = task.comments || [];
+    task.comments.push(comment);
+    await board.save();
+    res.status(201).json(comment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteComment = async (req, res) => {
+  try {
+    const { boardId, taskId, commentId } = req.params;
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ message: 'Board not found' });
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    const task = board.tasks.find(t => t._id === taskId);
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+    task.comments = (task.comments || []).filter(c => c.id !== commentId);
+    await board.save();
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

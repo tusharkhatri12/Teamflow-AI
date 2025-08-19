@@ -13,6 +13,10 @@ const BoardPage = ({ user }) => {
   const [error, setError] = useState('');
   const [members, setMembers] = useState([]);
   const [selectedAssignee, setSelectedAssignee] = useState('');
+  const [sprints, setSprints] = useState([]);
+  const [selectedSprint, setSelectedSprint] = useState('');
+  const [creatingSprint, setCreatingSprint] = useState(false);
+  const [newSprint, setNewSprint] = useState({ name: '', startDate: '', endDate: '', active: false });
   const apiBase = process.env.REACT_APP_API_URL || ''; // ensure proxy or full base
 
   const orgId = useMemo(() => (
@@ -26,9 +30,11 @@ const BoardPage = ({ user }) => {
     }
     const fetchBoard = async () => {
       try {
-        const query = selectedAssignee ? `?assigneeId=${selectedAssignee}` : '';
+        const params = new URLSearchParams();
+        if (selectedAssignee) params.append('assigneeId', selectedAssignee);
+        if (selectedSprint) params.append('sprintId', selectedSprint);
         const token = localStorage.getItem('token');
-        const res = await axios.get(`${apiBase}/api/boards/${orgId}${query}`, {
+        const res = await axios.get(`${apiBase}/api/boards/${orgId}${params.toString() ? `?${params.toString()}` : ''}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         setBoard(res.data);
@@ -40,7 +46,7 @@ const BoardPage = ({ user }) => {
       }
     };
     fetchBoard();
-  }, [orgId, apiBase, selectedAssignee]);
+  }, [orgId, apiBase, selectedAssignee, selectedSprint]);
 
   // Load members for admin dropdown
   useEffect(() => {
@@ -52,7 +58,7 @@ const BoardPage = ({ user }) => {
         const res = await axios.get(`${apiBase}/org/members`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        const m = (res.data?.members || []).map(u => ({ id: u._id, name: u.name || u.email }));
+        const m = (res.data?.members || []).map(u => ({ id: u._id || u.id, name: u.name || u.email || 'Unnamed' }));
         setMembers(m);
       } catch (e) {
         // ignore silently
@@ -61,6 +67,21 @@ const BoardPage = ({ user }) => {
     // Only admins need the list; but harmless to fetch for employees too
     loadMembers();
   }, [apiBase, orgId]);
+
+  // Load sprints
+  useEffect(() => {
+    const loadSprints = async () => {
+      try {
+        if (!board?._id) return;
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${apiBase}/api/boards/${board._id}/sprints`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        setSprints(res.data || []);
+      } catch {}
+    };
+    loadSprints();
+  }, [apiBase, board?._id]);
 
   const createDefaultBoard = async () => {
     if (!orgId) return;
@@ -114,20 +135,40 @@ const BoardPage = ({ user }) => {
     }
   };
 
-  const addTask = async (columnId, title) => {
+  const addTask = async (columnId, title, assigneeOverride, options = {}) => {
     if (!title) return;
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post(`${apiBase}/api/boards/${board._id}/task`, {
         columnId,
         title,
-        assigneeId: selectedAssignee || user?.id
+        assigneeId: assigneeOverride || selectedAssignee || user?.id,
+        sprintId: options.sprintId || selectedSprint || undefined,
+        labels: options.labels || [],
+        priority: options.priority || 'medium'
       }, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setBoard(res.data);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const createSprint = async () => {
+    if (!newSprint.name) return;
+    try {
+      setCreatingSprint(true);
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${apiBase}/api/boards/${board._id}/sprints`, newSprint, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      setSprints(prev => [...prev, res.data]);
+      setNewSprint({ name: '', startDate: '', endDate: '', active: false });
+    } catch (e) {
+      // noop
+    } finally {
+      setCreatingSprint(false);
     }
   };
 
@@ -188,6 +229,61 @@ const BoardPage = ({ user }) => {
                 <option key={m.id} value={m.id}>{m.name}</option>
               ))}
             </select>
+            <label style={{ margin: '0 8px 0 16px', color: '#bfc9d4' }}>Sprint:</label>
+            <select
+              value={selectedSprint}
+              onChange={(e) => setSelectedSprint(e.target.value)}
+              style={{
+                background: '#0f0f0f',
+                color: '#fff',
+                border: '1px solid #2b2b2b',
+                borderRadius: 8,
+                padding: '8px 10px',
+                minWidth: 180
+              }}
+            >
+              <option value="">All sprints</option>
+              {sprints.map(s => (
+                <option key={s._id} value={s._id}>{s.name}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setCreatingSprint(v => !v)}
+              style={{ marginLeft: 12, padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#bfc9d4' }}
+            >
+              {creatingSprint ? 'Close' : 'New Sprint'}
+            </button>
+            {creatingSprint && (
+              <div style={{ display: 'inline-flex', gap: 8, marginLeft: 12, alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="Sprint name"
+                  value={newSprint.name}
+                  onChange={e => setNewSprint(s => ({ ...s, name: e.target.value }))}
+                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+                />
+                <input
+                  type="date"
+                  value={newSprint.startDate}
+                  onChange={e => setNewSprint(s => ({ ...s, startDate: e.target.value }))}
+                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+                />
+                <input
+                  type="date"
+                  value={newSprint.endDate}
+                  onChange={e => setNewSprint(s => ({ ...s, endDate: e.target.value }))}
+                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+                />
+                <label style={{ color: '#bfc9d4', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <input
+                    type="checkbox"
+                    checked={!!newSprint.active}
+                    onChange={e => setNewSprint(s => ({ ...s, active: e.target.checked }))}
+                  /> Active
+                </label>
+                <button onClick={createSprint} style={{ padding: '8px 10px', borderRadius: 8, background: '#4f46e5', color: '#fff', border: 'none' }}>Create</button>
+              </div>
+            )}
           </div>
         ) : (
           <div style={{ marginLeft: 'auto', color: '#9aa3af' }}>Viewing your tasks</div>
@@ -202,7 +298,10 @@ const BoardPage = ({ user }) => {
                   <Column
                     column={col}
                     tasks={col.taskIds.map(id => board.tasks.find(t => t._id === id)).filter(Boolean)}
-                    onAddTask={(title) => addTask(col.id, title)}
+                    members={members}
+                    sprints={sprints}
+                    canAssign={isAdmin}
+                    onAddTask={(title, assigneeId, options) => addTask(col.id, title, assigneeId, options)}
                     placeholder={provided.placeholder}
                   />
                 </div>
