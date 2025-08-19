@@ -45,9 +45,9 @@ router.post('/', async (req, res) => {
         console.error('❌ Failed to summarize:', err.message);
       }
     } else {
-      // Save normal messages for standup
+      // Save normal messages for standup to MongoDB
       try {
-        saveStandup(user, text);
+        await saveStandup(user, text, channel);
       } catch (err) {
         console.error('❌ Failed to save message:', err.message);
       }

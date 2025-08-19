@@ -4,20 +4,15 @@ const User = require('../models/User');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const StandupMessage = require('../models/StandupMessage');
 
 const standupsPath = path.join(__dirname, '../../data/standups.json');
 
-// GET /messages - returns only normal user messages
-router.get('/messages', (req, res) => {
+// GET /messages - returns only normal user messages (MongoDB)
+router.get('/messages', async (req, res) => {
   try {
-    const data = fs.readFileSync(standupsPath, 'utf8');
-    const messages = JSON.parse(data);
-
-    const userMessages = messages.filter(msg => {
-      return !msg.message.startsWith(':memo: *Conversation Summary:*');
-    });
-
-    res.json(userMessages);
+    const docs = await StandupMessage.find({ isSummary: false }).sort({ createdAt: -1 }).limit(500);
+    res.json(docs);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load messages' });
   }
@@ -28,17 +23,11 @@ const boardRoute = require('./boardRoute');
 router.use('/boards', boardRoute);
 
 
-// GET /summaries - returns only summaries by the bot
-router.get('/summaries', (req, res) => {
+// GET /summaries - returns only summaries by the bot (MongoDB)
+router.get('/summaries', async (req, res) => {
   try {
-    const data = fs.readFileSync(standupsPath, 'utf8');
-    const messages = JSON.parse(data);
-
-    const summaries = messages.filter(msg => 
-      msg.message.startsWith(':memo: *Conversation Summary:*')
-    );
-
-    res.json(summaries);
+    const docs = await StandupMessage.find({ isSummary: true }).sort({ createdAt: -1 }).limit(200);
+    res.json(docs);
   } catch (err) {
     res.status(500).json({ error: 'Failed to load summaries' });
   }

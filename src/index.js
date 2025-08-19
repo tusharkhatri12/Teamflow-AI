@@ -51,7 +51,9 @@ app.get('/health', (req, res) => {
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
-  });
+  });        
+
+  
 });
 
 // Test route
@@ -88,24 +90,16 @@ app.use('/api/organizations', orgRoutes);
 // Auth routes with specific middleware
 app.use('/auth', express.json({ limit: '10mb' }), authRoutes);
 
-// ✅ Correct path to /data/summaries.json
-app.get('/summaries', (req, res) => {
-  const summariesPath = path.resolve(__dirname, 'data', 'standups.json');
-
-  fs.readFile(summariesPath, 'utf8', (err, data) => {
-    if (err) {
-      console.error('Error reading summaries.json:', err);
-      return res.status(500).json({ error: 'Failed to read summaries file.' });
-    }
-
-    try {
-      const summaries = JSON.parse(data);
-      res.json(summaries);
-    } catch (parseErr) {
-      console.error('Error parsing summaries.json:', parseErr);
-      res.status(500).json({ error: 'Invalid JSON in summaries file.' });
-    }
-  });
+// Summaries via MongoDB
+const StandupMessage = require('./models/StandupMessage');
+app.get('/summaries', async (req, res) => {
+  try {
+    const docs = await StandupMessage.find({ isSummary: true }).sort({ createdAt: -1 }).limit(200);
+    res.json(docs);
+  } catch (err) {
+    console.error('Error fetching summaries:', err);
+    res.status(500).json({ error: 'Failed to fetch summaries' });
+  }
 });
 
 // Error handling middleware for body parsing and other errors

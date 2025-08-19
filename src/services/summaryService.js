@@ -1,29 +1,21 @@
-const fs = require('fs');
-const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
+const StandupMessage = require('../models/StandupMessage');
 
-const standupsPath = path.join(__dirname, '../../data/standups.json');
-let standups = [];
-
-try {
-  standups = JSON.parse(fs.readFileSync(standupsPath));
-} catch (e) {
-  standups = [];
+async function saveStandup(user, message, channel) {
+  try {
+    await StandupMessage.create({ user, message, channel, isSummary: false });
+  } catch (e) {
+    console.error('Failed saving standup message:', e.message);
+  }
 }
 
-function saveStandup(user, message) {
-  standups.push({ user, message });
-  fs.writeFileSync(standupsPath, JSON.stringify(standups, null, 2));
+async function getStandupCount() {
+  return StandupMessage.countDocuments({ isSummary: false });
 }
 
-function getStandupCount() {
-  return standups.length;
-}
-
-function resetStandups() {
-  standups = [];
-  fs.writeFileSync(standupsPath, JSON.stringify([], null, 2));
+async function resetStandups() {
+  await StandupMessage.deleteMany({ isSummary: false });
 }
 
 async function getUsername(userId) {
@@ -43,10 +35,11 @@ async function getUsername(userId) {
 }
 
 async function summarizeTextWithNames() {
-  if (standups.length === 0) return '⚠️ No content to summarize';
+  const recent = await StandupMessage.find({ isSummary: false }).sort({ createdAt: -1 }).limit(100);
+  if (recent.length === 0) return '⚠️ No content to summarize';
 
   const formattedMessages = await Promise.all(
-    standups.map(async s => {
+    recent.map(async s => {
       const name = await getUsername(s.user);
       return `${name}: ${s.message}`;
     })
@@ -68,7 +61,10 @@ async function summarizeTextWithNames() {
       }
     });
 
-    return response.data.choices[0].message.content;
+    const content = response.data.choices[0].message.content;
+    // Store the generated summary
+    await StandupMessage.create({ user: 'StandupBot', message: content, isSummary: true });
+    return content;
   } catch (err) {
     console.error('❌ Failed to summarize:', err.message);
     return '❌ Error generating summary.';
