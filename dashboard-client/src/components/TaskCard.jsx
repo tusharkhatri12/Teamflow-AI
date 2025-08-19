@@ -3,12 +3,12 @@ import React, { useMemo } from 'react';
 import './TaskCard.css';
 
 const TaskCard = ({ task, members = [] }) => {
-  if (!task) return null;
   const assigneeName = useMemo(() => {
-    if (!task.assigneeId) return '';
+    if (!task || !task.assigneeId) return '';
     const m = members.find(x => String(x.id) === String(task.assigneeId));
     return m?.name || '';
-  }, [members, task.assigneeId]);
+  }, [members, task?.assigneeId]);
+  if (!task) return null;
   return (
     <div className="task-card">
       <div className="task-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
