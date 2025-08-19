@@ -1,60 +1,48 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { saveStandup, summarizeText } = require('../services/summaryService');
+const {summarizeText } = require('../services/summaryService');
+const StandupMessage = require('../models/StandupMessage') ;
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 
+
 router.post('/', async (req, res) => {
-  const { type, challenge, event } = req.body;
+  const { user_name, channel_id, text } = req.body;
 
-  // Slack verification
-  if (type === 'url_verification') {
-    return res.status(200).json({ challenge });
-  }
+  console.log(`🚀 Slash command /summarize triggered by ${user_name}`);
 
-  // Only handle message events (not bot messages or edits)
-  if (type === 'event_callback' && event.type === 'message' && !event.subtype) {
-    const user = event.user;
-    const text = event.text;
-    const channel = event.channel;
+  try {
+    // Fetch all messages from MongoDB (you can filter by channel_id if needed)
+    const standups = await StandupMessage.find().lean();
 
-    console.log(`📥 Message from ${user}: ${text}`);
-
-    if (text.toLowerCase().includes('/summarize')) {
-      console.log('📄 Summarize command triggered');
-      try {
-        const summary = await summarizeText();
-
-        await axios.post(
-          'https://slack.com/api/chat.postMessage',
-          {
-            channel: channel,
-            text: `:memo: *Conversation Summary:*\n${summary}`,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        console.log('✅ Posted summary to Slack');
-      } catch (err) {
-        console.error('❌ Failed to summarize:', err.message);
-      }
-    } else {
-      // Save normal messages for standup to MongoDB
-      try {
-        await saveStandup(user, text, channel);
-      } catch (err) {
-        console.error('❌ Failed to save message:', err.message);
-      }
+    if (!standups.length) {
+      return res.json({
+        response_type: 'ephemeral',
+        text: '⚠️ No messages found to summarize.'
+      });
     }
-  }
 
-  return res.sendStatus(200);
+    // Format messages for summarization
+    const formatted = standups
+      .map(s => `${s.user}: ${s.message}`)
+      .join('\n');
+
+    // Generate AI summary
+    const summary = await summarizeText(formatted);
+
+    return res.json({
+      response_type: 'in_channel',
+      text: `📝 *Conversation Summary:*\n${summary}`
+    });
+
+  } catch (err) {
+    console.error('❌ Summary failed:', err.message);
+    return res.json({
+      response_type: 'ephemeral',
+      text: '⚠️ Failed to generate summary. Please try again.'
+    });
+  }
 });
 
 module.exports = router;
