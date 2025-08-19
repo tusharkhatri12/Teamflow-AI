@@ -2,13 +2,40 @@
 const Board = require('../models/Board');
 const { nanoid } = require('nanoid'); // npm i nanoid
 
-// Get board by orgId
+// Get board by orgId, optionally filtered by assigneeId
 exports.getBoardByOrg = async (req, res) => {
   try {
     const { orgId } = req.params;
+    const { assigneeId } = req.query;
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(userOrgId) !== String(orgId)) {
+      return res.status(403).json({ message: 'Forbidden: Not a member of this organization' });
+    }
+
     const board = await Board.findOne({ orgId });
     if (!board) return res.status(404).json({ message: 'Board not found' });
-    res.json(board);
+
+    const isAdmin = req.user?.role === 'admin' || req.user?.role === 'owner';
+    const effectiveAssignee = isAdmin ? assigneeId : (req.user?._id?.toString());
+    if (!effectiveAssignee) {
+      return res.json(board);
+    }
+
+    // Filter tasks by assignee and adjust columns' taskIds accordingly
+    const allowedTaskIds = new Set(
+      board.tasks
+        .filter(t => String(t.assigneeId || '') === String(effectiveAssignee))
+        .map(t => t._id)
+    );
+
+    const filtered = board.toObject();
+    filtered.tasks = filtered.tasks.filter(t => allowedTaskIds.has(t._id));
+    filtered.columns = filtered.columns.map(col => ({
+      ...col,
+      taskIds: col.taskIds.filter(id => allowedTaskIds.has(id))
+    }));
+
+    return res.json(filtered);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -72,12 +99,19 @@ exports.addTask = async (req, res) => {
     const board = await Board.findById(boardId);
     if (!board) return res.status(404).json({ message: 'Board not found' });
 
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
     const taskId = nanoid(10);
     const task = {
       _id: taskId,
       title,
       description: description || '',
-      assigneeId: assigneeId || null,
+      assigneeId: (req.user?.role === 'admin' || req.user?.role === 'owner')
+        ? (assigneeId || req.user._id)
+        : req.user._id,
       dueDate: dueDate ? new Date(dueDate) : null
     };
     board.tasks.push(task);
@@ -100,8 +134,20 @@ exports.updateTask = async (req, res) => {
     const board = await Board.findById(boardId);
     if (!board) return res.status(404).json({ message: 'Board not found' });
 
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
     const task = board.tasks.find(t => t._id === taskId);
     if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    // Non-admins cannot reassign tasks to others
+    if (req.user?.role !== 'admin' && req.user?.role !== 'owner') {
+      if (updates.assigneeId && String(updates.assigneeId) !== String(req.user._id)) {
+        return res.status(403).json({ message: 'Forbidden: cannot reassign task' });
+      }
+    }
 
     Object.assign(task, updates);
     await board.save();
@@ -117,6 +163,11 @@ exports.deleteTask = async (req, res) => {
     const { boardId, taskId } = req.params;
     const board = await Board.findById(boardId);
     if (!board) return res.status(404).json({ message: 'Board not found' });
+
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
 
     board.tasks = board.tasks.filter(t => t._id !== taskId);
     board.columns.forEach(c => { c.taskIds = c.taskIds.filter(id => id !== taskId); });
@@ -136,9 +187,17 @@ exports.moveTask = async (req, res) => {
     const board = await Board.findById(boardId);
     if (!board) return res.status(404).json({ message: 'Board not found' });
 
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
     // remove from source
     const sourceCol = board.columns.find(c => c.id === source.droppableId);
-    sourceCol.taskIds.splice(source.index, 1);
+    const removeIndex = sourceCol.taskIds.indexOf(draggableId);
+    if (removeIndex !== -1) {
+      sourceCol.taskIds.splice(removeIndex, 1);
+    }
 
     if (!destination) {
       // dropped outside any column -> just save removal
@@ -147,7 +206,8 @@ exports.moveTask = async (req, res) => {
     }
 
     const destCol = board.columns.find(c => c.id === destination.droppableId);
-    destCol.taskIds.splice(destination.index, 0, draggableId);
+    const insertIndex = Math.max(0, Math.min(destination.index ?? destCol.taskIds.length, destCol.taskIds.length));
+    destCol.taskIds.splice(insertIndex, 0, draggableId);
 
     await board.save();
     res.json(board);

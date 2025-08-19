@@ -1,5 +1,6 @@
 // src/pages/BoardPage.jsx
 import React, { useEffect, useMemo, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import Column from '../components/Column';
@@ -10,6 +11,8 @@ const BoardPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const [members, setMembers] = useState([]);
+  const [selectedAssignee, setSelectedAssignee] = useState('');
   const apiBase = process.env.REACT_APP_API_URL || ''; // ensure proxy or full base
 
   const orgId = useMemo(() => (
@@ -23,7 +26,11 @@ const BoardPage = ({ user }) => {
     }
     const fetchBoard = async () => {
       try {
-        const res = await axios.get(`${apiBase}/api/boards/${orgId}`);
+        const query = selectedAssignee ? `?assigneeId=${selectedAssignee}` : '';
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${apiBase}/api/boards/${orgId}${query}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
         setBoard(res.data);
       } catch (err) {
         // do not auto-create; show explicit button
@@ -33,14 +40,37 @@ const BoardPage = ({ user }) => {
       }
     };
     fetchBoard();
-  }, [orgId, apiBase]);
+  }, [orgId, apiBase, selectedAssignee]);
+
+  // Load members for admin dropdown
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        if (!orgId) return;
+        // Requires auth token; assuming stored in localStorage
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${apiBase}/org/members`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        const m = (res.data?.members || []).map(u => ({ id: u._id, name: u.name || u.email }));
+        setMembers(m);
+      } catch (e) {
+        // ignore silently
+      }
+    };
+    // Only admins need the list; but harmless to fetch for employees too
+    loadMembers();
+  }, [apiBase, orgId]);
 
   const createDefaultBoard = async () => {
     if (!orgId) return;
     setCreating(true);
     setError('');
     try {
-      const res = await axios.post(`${apiBase}/api/boards`, { orgId });
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${apiBase}/api/boards`, { orgId }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       setBoard(res.data);
     } catch (err) {
       console.error(err);
@@ -70,10 +100,13 @@ const BoardPage = ({ user }) => {
 
     // send to backend
     try {
+      const token = localStorage.getItem('token');
       await axios.post(`${apiBase}/api/boards/${board._id}/move`, {
         source,
         destination,
         draggableId
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       // ideally refresh with latest board from server
     } catch (err) {
@@ -84,9 +117,13 @@ const BoardPage = ({ user }) => {
   const addTask = async (columnId, title) => {
     if (!title) return;
     try {
+      const token = localStorage.getItem('token');
       const res = await axios.post(`${apiBase}/api/boards/${board._id}/task`, {
         columnId,
-        title
+        title,
+        assigneeId: selectedAssignee || user?.id
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setBoard(res.data);
     } catch (err) {
@@ -125,8 +162,37 @@ const BoardPage = ({ user }) => {
     );
   }
 
+  const isAdmin = user?.role === 'admin' || user?.role === 'owner';
+
   return (
     <div className="board-root">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>Board</h2>
+        {isAdmin ? (
+          <div style={{ marginLeft: 'auto' }}>
+            <label style={{ marginRight: 8, color: '#bfc9d4' }}>View tasks for:</label>
+            <select
+              value={selectedAssignee}
+              onChange={(e) => setSelectedAssignee(e.target.value)}
+              style={{
+                background: '#0f0f0f',
+                color: '#fff',
+                border: '1px solid #2b2b2b',
+                borderRadius: 8,
+                padding: '8px 10px',
+                minWidth: 200
+              }}
+            >
+              <option value="">All members</option>
+              {members.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div style={{ marginLeft: 'auto', color: '#9aa3af' }}>Viewing your tasks</div>
+        )}
+      </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="board-columns">
           {board.columns.map(col => (

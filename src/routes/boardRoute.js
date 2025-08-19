@@ -2,8 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const boardCtrl = require('../controllers/BoardController');
+const auth = require('../middleware/auth');
 
 // Board per org
+router.use(auth);
+
 router.get('/:orgId', boardCtrl.getBoardByOrg);
 router.post('/', boardCtrl.createBoard); // { orgId, name }
 
