@@ -288,7 +288,14 @@ const BoardPage = ({ user }) => {
           <div style={{ marginLeft: 'auto', color: '#9aa3af' }}>Viewing your tasks</div>
         )}
       </div>
-      {/* Global Add Task Row */}
+      {/* Toolbar */}
+      <div style={{ display:'flex', alignItems:'center', gap:12, margin:'10px 0 6px 0' }}>
+        <button style={{ padding:'6px 10px', borderRadius:8, border:'1px solid #2b2b2b', background:'#0f0f0f', color:'#bfc9d4' }}>Filter</button>
+        <button style={{ padding:'6px 10px', borderRadius:8, border:'1px solid #2b2b2b', background:'#0f0f0f', color:'#bfc9d4' }}>Group by</button>
+        <button style={{ padding:'6px 10px', borderRadius:8, border:'1px solid #2b2b2b', background:'#0f0f0f', color:'#bfc9d4' }}>Hide Columns</button>
+      </div>
+
+      {/* Table Header */}
       <div className="tasks-header" style={{ marginTop: 0 }}>
         <span className="cell title">Title</span>
         <span className="cell assignee">Assignee</span>
@@ -357,14 +364,26 @@ const BoardPage = ({ user }) => {
               <span className="cell labels">{(task.labels || []).join(', ')}</span>
               <span className={`cell priority ${task.priority}`}>{task.priority}</span>
               <span className="cell status">
-                <select value={currentColumn?.id || ''} onChange={e => moveTaskToColumn(task._id, e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
-                  {['New', 'In Progress', 'Moved to QA', 'Done', 'Reported'].map(statusTitle => {
-                    const col = board.columns.find(c => c.title === statusTitle) || board.columns[0];
-                    return (
-                      <option key={statusTitle} value={col.id}>{statusTitle}</option>
-                    );
-                  })}
-                </select>
+                {/* status pill with inline select on click */}
+                <div style={{ position:'relative' }}>
+                  <span className={`status-pill ${
+                    currentColumn?.title === 'New' ? 'status-new' :
+                    currentColumn?.title === 'In Progress' ? 'status-inprogress' :
+                    currentColumn?.title === 'Moved to QA' ? 'status-qa' :
+                    currentColumn?.title === 'Done' ? 'status-done' :
+                    'status-reported'
+                  }`}>
+                    {currentColumn?.title || 'New'}
+                  </span>
+                  <select aria-label="Change status" value={currentColumn?.id || ''} onChange={e => moveTaskToColumn(task._id, e.target.value)} style={{ position:'absolute', inset:0, opacity:0, cursor:'pointer' }}>
+                    {['New', 'In Progress', 'Moved to QA', 'Done', 'Reported'].map(statusTitle => {
+                      const col = board.columns.find(c => c.title === statusTitle) || board.columns[0];
+                      return (
+                        <option key={statusTitle} value={col.id}>{statusTitle}</option>
+                      );
+                    })}
+                  </select>
+                </div>
               </span>
             </div>
           );
