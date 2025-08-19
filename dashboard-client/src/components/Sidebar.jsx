@@ -62,6 +62,8 @@ const Sidebar = ({ user, onLogout, isOpen, onToggle }) => {
     navigate(path);
     if (isMobile) {
       setMobileMenuOpen(false);
+    } else if (isOpen && onToggle) {
+      onToggle();
     }
   };
 

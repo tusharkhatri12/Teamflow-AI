@@ -120,7 +120,8 @@ exports.addTask = async (req, res) => {
       sprintId: sprintId || null,
       labels,
       priority,
-      dueDate: dueDate ? new Date(dueDate) : null
+      dueDate: dueDate ? new Date(dueDate) : null,
+      createdBy: req.user?._id
     };
     board.tasks.push(task);
 

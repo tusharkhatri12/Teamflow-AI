@@ -1,7 +1,6 @@
 // src/components/Column.jsx
 import React, { useMemo, useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import TaskCard from './TaskCard';
 import './Column.css';
 
 const Column = ({ column, tasks = [], onAddTask, placeholder, members = [], sprints = [], canAssign = false }) => {
@@ -17,23 +16,6 @@ const Column = ({ column, tasks = [], onAddTask, placeholder, members = [], spri
       <div className="column-header">
         <h3>{column.title}</h3>
         <span className="badge">{tasks.length}</span>
-      </div>
-
-      <div className="tasks-list">
-        {tasks.map((task, index) => (
-          <Draggable key={task._id} draggableId={task._id} index={index}>
-            {(provided) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}
-                style={{ marginBottom: 8, ...provided.draggableProps.style }}
-              >
-                <TaskCard task={task} members={members} />
-              </div>
-            )}
-          </Draggable>
-        ))}
       </div>
 
       <div className="add-task" style={{ flexWrap: 'wrap' }}>
@@ -87,6 +69,44 @@ const Column = ({ column, tasks = [], onAddTask, placeholder, members = [], spri
           setNewTitle(''); setAssigneeId(''); setLabels(''); setPriority('medium'); setSprintId('');
         }}>Add</button>
       </div>
+
+      <div className="tasks-header">
+        <span className="cell title">Title</span>
+        <span className="cell assignee">Assignee</span>
+        <span className="cell created-by">Assigned By</span>
+        <span className="cell sprint">Sprint</span>
+        <span className="cell labels">Labels</span>
+        <span className="cell priority">Priority</span>
+      </div>
+
+      <div className="tasks-list">
+        {tasks.map((task, index) => (
+          <Draggable key={task._id} draggableId={task._id} index={index}>
+            {(provided) => {
+              const assigneeName = membersOptions.find(m => String(m.id) === String(task.assigneeId))?.name || '';
+              const createdByName = membersOptions.find(m => String(m.id) === String(task.createdBy))?.name || '';
+              const sprintName = (sprints || []).find(s => String(s._id) === String(task.sprintId))?.name || '';
+              return (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.draggableProps}
+                  {...provided.dragHandleProps}
+                  className="task-row"
+                  style={provided.draggableProps.style}
+                >
+                  <span className="cell title">{task.title}</span>
+                  <span className="cell assignee">{assigneeName}</span>
+                  <span className="cell created-by">{createdByName}</span>
+                  <span className="cell sprint">{sprintName}</span>
+                  <span className="cell labels">{(task.labels || []).join(', ')}</span>
+                  <span className={`cell priority ${task.priority}`}>{task.priority}</span>
+                </div>
+              );
+            }}
+          </Draggable>
+        ))}
+      </div>
+
       {placeholder}
     </div>
   );
