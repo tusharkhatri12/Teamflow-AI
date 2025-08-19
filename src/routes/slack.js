@@ -1,11 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
-const {summarizeText } = require('../services/summaryService');
-const StandupMessage = require('../models/StandupMessage') ;
-
-const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
-
+const { summarizeText } = require('../services/summaryService');
+const StandupMessage = require("../models/StandupMessage") // ✅ MongoDB Model
 
 router.post('/', async (req, res) => {
   const { user_name, channel_id, text } = req.body;
@@ -13,8 +9,8 @@ router.post('/', async (req, res) => {
   console.log(`🚀 Slash command /summarize triggered by ${user_name}`);
 
   try {
-    // Fetch all messages from MongoDB (you can filter by channel_id if needed)
-    const standups = await StandupMessage.find().lean();
+    // ✅ Fetch all standups from MongoDB (you can filter by channel_id if needed)
+    const standups = await StandupMessage.find().sort({ createdAt: 1 });
 
     if (!standups.length) {
       return res.json({
@@ -28,7 +24,7 @@ router.post('/', async (req, res) => {
       .map(s => `${s.user}: ${s.message}`)
       .join('\n');
 
-    // Generate AI summary
+    // Generate summary with AI
     const summary = await summarizeText(formatted);
 
     return res.json({
