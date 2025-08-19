@@ -2,8 +2,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import axios from 'axios';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import Column from '../components/Column';
 import './BoardPage.css';
 
 const BoardPage = ({ user }) => {
@@ -17,6 +15,11 @@ const BoardPage = ({ user }) => {
   const [selectedSprint, setSelectedSprint] = useState('');
   const [creatingSprint, setCreatingSprint] = useState(false);
   const [newSprint, setNewSprint] = useState({ name: '', startDate: '', endDate: '', active: false });
+  const [newTitle, setNewTitle] = useState('');
+  const [newAssigneeId, setNewAssigneeId] = useState('');
+  const [newSprintId, setNewSprintId] = useState('');
+  const [newPriority, setNewPriority] = useState('medium');
+  const [newLabels, setNewLabels] = useState('');
   const apiBase = process.env.REACT_APP_API_URL || ''; // ensure proxy or full base
 
   const orgId = useMemo(() => (
@@ -101,55 +104,51 @@ const BoardPage = ({ user }) => {
     }
   };
 
-  const onDragEnd = async (result) => {
-    const { destination, source, draggableId, type } = result;
-    if (!destination) return;
-    // If dragging columns (future feature) handle type === 'column'
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-
-    // update UI optimistically
+  const moveTaskToColumn = async (taskId, targetColumnId) => {
+    if (!board) return;
+    const currentColumn = board.columns.find(c => c.taskIds.includes(taskId));
+    if (!currentColumn || currentColumn.id === targetColumnId) return;
+    const source = { droppableId: currentColumn.id, index: currentColumn.taskIds.indexOf(taskId) };
+    const destination = { droppableId: targetColumnId, index: 0 };
+    // optimistic update
     const newBoard = JSON.parse(JSON.stringify(board));
-    const sourceCol = newBoard.columns.find(c => c.id === source.droppableId);
-    const destCol = newBoard.columns.find(c => c.id === destination.droppableId);
-
-    // remove from source
-    sourceCol.taskIds.splice(source.index, 1);
-    // insert into dest
-    destCol.taskIds.splice(destination.index, 0, draggableId);
-
-    setBoard(newBoard);
-
-    // send to backend
+    const src = newBoard.columns.find(c => c.id === source.droppableId);
+    const dst = newBoard.columns.find(c => c.id === destination.droppableId);
+    if (src && dst) {
+      const idx = src.taskIds.indexOf(taskId);
+      if (idx > -1) src.taskIds.splice(idx, 1);
+      dst.taskIds.splice(0, 0, taskId);
+      setBoard(newBoard);
+    }
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${apiBase}/api/boards/${board._id}/move`, {
-        source,
-        destination,
-        draggableId
-      }, {
+      await axios.post(`${apiBase}/api/boards/${board._id}/move`, { source, destination, draggableId: taskId }, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      // ideally refresh with latest board from server
-    } catch (err) {
-      console.error('Move failed', err);
+    } catch (e) {
+      // ignore
     }
   };
 
-  const addTask = async (columnId, title, assigneeOverride, options = {}) => {
-    if (!title) return;
+  const addTask = async () => {
+    if (!newTitle) return;
+    const defaultCol = board?.columns?.find(c => c.title?.toLowerCase() === 'to do') || board?.columns?.[0];
+    if (!defaultCol) return;
     try {
       const token = localStorage.getItem('token');
+      const parsedLabels = newLabels.split(',').map(s => s.trim()).filter(Boolean);
       const res = await axios.post(`${apiBase}/api/boards/${board._id}/task`, {
-        columnId,
-        title,
-        assigneeId: assigneeOverride || selectedAssignee || user?.id,
-        sprintId: options.sprintId || selectedSprint || undefined,
-        labels: options.labels || [],
-        priority: options.priority || 'medium'
+        columnId: defaultCol.id,
+        title: newTitle,
+        assigneeId: newAssigneeId || selectedAssignee || user?.id,
+        sprintId: newSprintId || selectedSprint || undefined,
+        labels: parsedLabels,
+        priority: newPriority
       }, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setBoard(res.data);
+      setNewTitle(''); setNewAssigneeId(''); setNewSprintId(''); setNewPriority('medium'); setNewLabels('');
     } catch (err) {
       console.error(err);
     }
@@ -289,27 +288,88 @@ const BoardPage = ({ user }) => {
           <div style={{ marginLeft: 'auto', color: '#9aa3af' }}>Viewing your tasks</div>
         )}
       </div>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="board-columns">
-          {board.columns.map(col => (
-            <Droppable droppableId={col.id} key={col.id}>
-              {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} className="column-wrapper">
-                  <Column
-                    column={col}
-                    tasks={col.taskIds.map(id => board.tasks.find(t => t._id === id)).filter(Boolean)}
-                    members={members}
-                    sprints={sprints}
-                    canAssign={isAdmin}
-                    onAddTask={(title, assigneeId, options) => addTask(col.id, title, assigneeId, options)}
-                    placeholder={provided.placeholder}
-                  />
-                </div>
-              )}
-            </Droppable>
-          ))}
-        </div>
-      </DragDropContext>
+      {/* Global Add Task Row */}
+      <div className="tasks-header" style={{ marginTop: 0 }}>
+        <span className="cell title">Title</span>
+        <span className="cell assignee">Assignee</span>
+        <span className="cell created-by">Assigned By</span>
+        <span className="cell sprint">Sprint</span>
+        <span className="cell labels">Labels</span>
+        <span className="cell priority">Priority</span>
+        <span className="cell status">Status</span>
+      </div>
+      <div className="task-row">
+        <span className="cell title">
+          <input
+            type="text"
+            placeholder="New task title..."
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+          />
+        </span>
+        <span className="cell assignee">
+          <select value={newAssigneeId} onChange={e => setNewAssigneeId(e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
+            <option value="">Unassigned</option>
+            {members.map(m => (<option key={m.id} value={m.id}>{m.name}</option>))}
+          </select>
+        </span>
+        <span className="cell created-by" />
+        <span className="cell sprint">
+          <select value={newSprintId} onChange={e => setNewSprintId(e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
+            <option value="">No sprint</option>
+            {sprints.map(s => (<option key={s._id} value={s._id}>{s.name}</option>))}
+          </select>
+        </span>
+        <span className="cell labels">
+          <input type="text" placeholder="labels (comma separated)" value={newLabels} onChange={e => setNewLabels(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }} />
+        </span>
+        <span className="cell priority">
+          <select value={newPriority} onChange={e => setNewPriority(e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </span>
+        <span className="cell status">
+          <button onClick={addTask} style={{ padding: '8px 10px', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 6, width: '100%' }}>Add</button>
+        </span>
+      </div>
+
+      {/* Tasks Table Rows */}
+      {board.columns.length > 0 && (
+        board.columns.reduce((rows, col) => {
+          col.taskIds.forEach(id => rows.push(id));
+          return rows;
+        }, []).map(taskId => {
+          const task = board.tasks.find(t => t._id === taskId);
+          if (!task) return null;
+          const assigneeName = members.find(m => String(m.id) === String(task.assigneeId))?.name || '';
+          const createdByName = members.find(m => String(m.id) === String(task.createdBy))?.name || '';
+          const sprintName = sprints.find(s => String(s._id) === String(task.sprintId))?.name || '';
+          const currentColumn = board.columns.find(c => c.taskIds.includes(task._id));
+          return (
+            <div className="task-row" key={task._id}>
+              <span className="cell title">{task.title}</span>
+              <span className="cell assignee">{assigneeName}</span>
+              <span className="cell created-by">{createdByName}</span>
+              <span className="cell sprint">{sprintName}</span>
+              <span className="cell labels">{(task.labels || []).join(', ')}</span>
+              <span className={`cell priority ${task.priority}`}>{task.priority}</span>
+              <span className="cell status">
+                <select value={currentColumn?.id || ''} onChange={e => moveTaskToColumn(task._id, e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
+                  {['New', 'In Progress', 'Moved to QA', 'Done', 'Reported'].map(statusTitle => {
+                    const col = board.columns.find(c => c.title === statusTitle) || board.columns[0];
+                    return (
+                      <option key={statusTitle} value={col.id}>{statusTitle}</option>
+                    );
+                  })}
+                </select>
+              </span>
+            </div>
+          );
+        })
+      )}
     </div>
   );
 };

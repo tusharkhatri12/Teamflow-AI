@@ -59,11 +59,13 @@ exports.createBoard = async (req, res) => {
       return res.status(200).json(existing);
     }
 
-    // create with default columns
+    // create with default columns matching desired statuses
     const defaultColumns = [
-      { id: nanoid(6), title: 'To Do', taskIds: [] },
+      { id: nanoid(6), title: 'New', taskIds: [] },
       { id: nanoid(6), title: 'In Progress', taskIds: [] },
-      { id: nanoid(6), title: 'Done', taskIds: [] }
+      { id: nanoid(6), title: 'Moved to QA', taskIds: [] },
+      { id: nanoid(6), title: 'Done', taskIds: [] },
+      { id: nanoid(6), title: 'Reported', taskIds: [] }
     ];
 
     const board = new Board({
