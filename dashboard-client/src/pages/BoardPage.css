@@ -1,0 +1,12 @@
+.board-root {
+    padding: 20px;
+    overflow-x: auto;
+  }
+  .board-columns {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .column-wrapper { min-width: 320px; }
+  .board-loading { padding: 40px; text-align:center; }
+  

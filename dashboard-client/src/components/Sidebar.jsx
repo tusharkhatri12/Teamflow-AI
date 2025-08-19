@@ -8,6 +8,7 @@ import {
   FileText,
   MessageCircle,
   Brain,
+  KanbanSquare,
   LogOut,
   Menu
 } from 'lucide-react';
@@ -20,6 +21,7 @@ const navIcons = {
   memory: <Brain size={22} />, // Brain
   organizations: <Building size={22} />, // Building
   employees: <Users size={22} />, // Users
+  board: <KanbanSquare size={22} />,
 };
 
 const navItems = [
@@ -29,6 +31,7 @@ const navItems = [
   { path: '/memory', label: 'Memory', icon: navIcons.memory },
   { path: '/organizations', label: 'Organization', icon: navIcons.organizations },
   { path: '/employees', label: 'Employees', icon: navIcons.employees },
+  { path: '/board', label: 'Board', icon: navIcons.board },
 ];
 
 const Sidebar = ({ user, onLogout, isOpen, onToggle }) => {

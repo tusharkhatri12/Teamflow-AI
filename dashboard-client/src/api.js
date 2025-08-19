@@ -15,5 +15,5 @@ export const fetchSummaries = async () => {
   export const fetchMemory = async () => {
     const res = await fetch("http://localhost:3000/memory");
     if (!res.ok) throw new Error("Failed to fetch memory");
-    return await res.json();
+    return await res.json()
   };

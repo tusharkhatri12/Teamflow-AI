@@ -13,6 +13,7 @@ import OrganizationsPage from "./pages/OrganizationPages";
 import EmployeePage from "./pages/EmployeePage";
 import JoinOrganization from "./pages/JoinOrganization";
 import "./index.css";
+import BoardPage from "./pages/BoardPage";
 
 function AppContent({ theme, setTheme, user, onLogout }) {
   const location = useLocation();
@@ -51,10 +52,14 @@ function AppContent({ theme, setTheme, user, onLogout }) {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<LandingPage />} />
+          <Route path="/tasks" element={<BoardPage user={user} />} />
+          <Route path="/board" element={<BoardPage user={user} />} />
+ 
+          
         </Routes>
       </main>
     </div>
-  );
+  )
 }
 
 const App = () => {

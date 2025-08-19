@@ -23,6 +23,11 @@ router.get('/messages', (req, res) => {
   }
 });
 
+const boardRoute = require('./boardRoute');
+// Mount board routes under /api/boards (index mounts this router at /api)
+router.use('/boards', boardRoute);
+
+
 // GET /summaries - returns only summaries by the bot
 router.get('/summaries', (req, res) => {
   try {
@@ -47,6 +52,8 @@ router.get('/protected', auth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
+  
 });
+
 
 module.exports = router;
