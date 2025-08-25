@@ -105,6 +105,8 @@ app.use('/slash', slashRouter);
 app.use('/slack', slackRoutes); // Changed from /slack/events to /slack
 app.use('/org', orgRoutes);
 app.use('/api/organizations', orgRoutes);
+const meetingsRoutes = require('./routes/meetings');
+app.use('/api/meetings', meetingsRoutes);
 
 // Auth routes with specific middleware
 app.use('/auth', express.json({ limit: '10mb' }), authRoutes);

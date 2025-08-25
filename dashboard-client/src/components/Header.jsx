@@ -9,14 +9,15 @@ const scrollToSection = (id) => {
 };
 
 const navLinks = [
-  { label: 'Features', id: 'features' },
-  { label: 'Pricing', id: 'pricing' },
-  { label: 'Early Access', id: 'waitlist' },
+    { label: 'Features', id: 'features' },
+    { label: 'Pricing', id: 'pricing' },
+    { label: 'Early Access', id: 'waitlist' },
 ];
 
 const Header = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  
 
   const handleNavClick = (id) => {
     setMenuOpen(false);
@@ -71,7 +72,7 @@ const Header = () => {
         {menuOpen ? <X size={28} /> : <Menu size={28} />}
       </button>
       {/* Mobile Nav Overlay */}
-      <AnimatePresence>
+      <AnimatePresence>         
         {menuOpen && (
           <motion.div
             className="mobile-nav-overlay"
