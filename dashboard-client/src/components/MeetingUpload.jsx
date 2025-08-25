@@ -1,47 +1,47 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { UploadCloud, CheckCircle, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 const MeetingUpload = ({ onUploaded }) => {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | uploading | transcribing | summarizing | done | error
+  const [status, setStatus] = useState('idle'); // idle | uploading | done | error
   const [error, setError] = useState('');
+  const [progress, setProgress] = useState(0); // 0-100
 
   const handleUpload = async () => {
     try {
       setError('');
+      setProgress(0);
       if (!file) return setError('Please select a file');
       if (!title.trim()) return setError('Please enter a meeting title');
 
       setStatus('uploading');
-      const token = localStorage.getItem('token');
       const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
 
       const formData = new FormData();
       formData.append('file', file);
       formData.append('title', title);
 
-      // Show staged progress labels (UX only)
-      setStatus('uploading');
-      const res = await fetch(`${apiUrl}/api/meetings/upload`, {
-        method: 'POST',
-        body: formData
+      const res = await axios.post(`${apiUrl}/api/meetings/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          if (evt.total) {
+            const pct = Math.round((evt.loaded * 100) / evt.total);
+            setProgress(pct);
+          }
+        }
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Upload failed');
-      }
-
       setStatus('done');
-      const data = await res.json();
-      onUploaded && onUploaded(data.meeting);
+      onUploaded && onUploaded(res.data.meeting);
       setFile(null);
       setTitle('');
+      setTimeout(() => setProgress(0), 800);
     } catch (e) {
       setStatus('error');
-      setError(e.message);
+      setError(e.response?.data?.error || e.message || 'Upload failed');
     }
   };
 
@@ -77,11 +77,23 @@ const MeetingUpload = ({ onUploaded }) => {
         </motion.button>
       </div>
 
+      {status === 'uploading' && (
+        <div style={{ marginTop: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#6b7280' }}>
+            <span>Uploading</span>
+            <span>{progress}%</span>
+          </div>
+          <div style={{ background: '#f3f4f6', borderRadius: 8, height: 8, overflow: 'hidden' }}>
+            <div style={{ width: `${progress}%`, height: '100%', background: '#8b5cf6', transition: 'width 0.15s ease' }} />
+          </div>
+        </div>
+      )}
+
       {status === 'error' && (
-        <div style={{ color: '#dc2626', fontSize: 14 }}>{error}</div>
+        <div style={{ color: '#dc2626', fontSize: 14, marginTop: 8 }}>{error}</div>
       )}
       {status === 'done' && (
-        <div style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
           <CheckCircle size={16} /> Uploaded and processed.
         </div>
       )}

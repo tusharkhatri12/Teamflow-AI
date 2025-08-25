@@ -12,6 +12,10 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 
+// Safe visibility into env presence (no secrets printed)
+console.log('Env check -> OPENAI_API_KEY set:', Boolean(process.env.OPENAI_API_KEY));
+console.log('Env check -> GROQ_API_KEY set:', Boolean(process.env.GROQ_API_KEY));
+
 require('./config/passport'); // Passport config
 
 const app = express();
