@@ -20,6 +20,8 @@ const BoardPage = ({ user }) => {
   const [newSprintId, setNewSprintId] = useState('');
   const [newPriority, setNewPriority] = useState('medium');
   const [newLabels, setNewLabels] = useState('');
+  const [openTaskId, setOpenTaskId] = useState('');
+  const [draft, setDraft] = useState({ title:'', assigneeId:'', sprintId:'', priority:'medium', labels:'', dueDate:'', description:'' });
   const apiBase = process.env.REACT_APP_API_URL || ''; // ensure proxy or full base
 
   const orgId = useMemo(() => (
@@ -169,6 +171,39 @@ const BoardPage = ({ user }) => {
     } finally {
       setCreatingSprint(false);
     }
+  };
+
+  const openPanel = (task) => {
+    setOpenTaskId(task._id);
+    setDraft({
+      title: task.title || '',
+      assigneeId: task.assigneeId || '',
+      sprintId: task.sprintId || '',
+      priority: task.priority || 'medium',
+      labels: (task.labels || []).join(', '),
+      dueDate: task.dueDate ? String(task.dueDate).slice(0,10) : '',
+      description: task.description || ''
+    });
+  };
+  const closePanel = () => { setOpenTaskId(''); };
+
+  const saveTask = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${apiBase}/api/boards/${board._id}/task/${openTaskId}`, {
+        title: draft.title,
+        assigneeId: draft.assigneeId || undefined,
+        sprintId: draft.sprintId || undefined,
+        priority: draft.priority,
+        labels: draft.labels.split(',').map(s=>s.trim()).filter(Boolean),
+        dueDate: draft.dueDate || null,
+        description: draft.description
+      }, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      // reload board to reflect edits
+      const res = await axios.get(`${apiBase}/api/boards/${orgId}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      setBoard(res.data);
+      closePanel();
+    } catch {}
   };
 
   if (loading) return <div className="board-loading">Loading board…</div>;
@@ -353,7 +388,7 @@ const BoardPage = ({ user }) => {
           const sprintName = sprints.find(s => String(s._id) === String(task.sprintId))?.name || '';
           const currentColumn = board.columns.find(c => c.taskIds.includes(task._id));
           return (
-            <div className="task-row" key={task._id}>
+            <div className="task-row" key={task._id} onClick={(e)=>{ if(e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') openPanel(task); }}>
               <span className="cell title">{task.title}</span>
               <span className="cell assignee">{assigneeName}</span>
               <span className="cell created-by">{createdByName}</span>
@@ -371,12 +406,7 @@ const BoardPage = ({ user }) => {
                   }`}>
                     {currentColumn?.title || 'New'}
                   </span>
-                  <select
-                    aria-label="Change status"
-                    value={currentColumn?.id || ''}
-                    onChange={e => moveTaskToColumn(task._id, e.target.value)}
-                    style={{ position:'absolute', inset:0, opacity:0, cursor:'pointer', zIndex: 10 }}
-                  >
+                  <select aria-label="Change status" value={currentColumn?.id || ''} onChange={e => moveTaskToColumn(task._id, e.target.value)} style={{ position:'absolute', inset:0, opacity:0, cursor:'pointer', zIndex: 10 }}>
                     {board.columns.map(col => (
                       <option key={col.id} value={col.id}>{col.title}</option>
                     ))}
@@ -386,6 +416,58 @@ const BoardPage = ({ user }) => {
             </div>
           );
         })
+      )}
+
+      {/* Side Panel */}
+      {openTaskId && (
+        <>
+          <div className="task-panel-overlay" onClick={closePanel} />
+          <div className="task-panel">
+            <div className="task-panel-header">
+              <input className="task-input" value={draft.title} onChange={e=>setDraft(s=>({ ...s, title:e.target.value }))} />
+              <button className="btn-secondary" onClick={closePanel}>Close</button>
+            </div>
+            <div className="task-panel-body">
+              <div className="task-field">
+                <label>Status</label>
+                <select className="task-select" value={board.columns.find(c=>c.taskIds.includes(openTaskId))?.id || ''} onChange={e=>moveTaskToColumn(openTaskId, e.target.value)}>
+                  {board.columns.map(col => (<option key={col.id} value={col.id}>{col.title}</option>))}
+                </select>
+              </div>
+              <div className="task-field">
+                <label>Assignee</label>
+                <select className="task-select" value={draft.assigneeId} onChange={e=>setDraft(s=>({ ...s, assigneeId:e.target.value }))}>
+                  <option value="">Unassigned</option>
+                  {members.map(m => (<option key={m.id} value={m.id}>{m.name}</option>))}
+                </select>
+              </div>
+              <div className="task-field">
+                <label>Due</label>
+                <input className="task-input" type="date" value={draft.dueDate} onChange={e=>setDraft(s=>({ ...s, dueDate:e.target.value }))} />
+              </div>
+              <div className="task-field">
+                <label>Priority</label>
+                <select className="task-select" value={draft.priority} onChange={e=>setDraft(s=>({ ...s, priority:e.target.value }))}>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              <div className="task-field">
+                <label>Labels</label>
+                <input className="task-input" value={draft.labels} onChange={e=>setDraft(s=>({ ...s, labels:e.target.value }))} placeholder="bug, improvement" />
+              </div>
+              <div className="task-field" style={{ gridTemplateColumns: '1fr' }}>
+                <label style={{ marginBottom: -8 }}>Description</label>
+                <textarea className="task-textarea" value={draft.description} onChange={e=>setDraft(s=>({ ...s, description:e.target.value }))} />
+              </div>
+            </div>
+            <div className="task-panel-footer">
+              <button className="btn-primary" onClick={saveTask}>Save</button>
+              <button className="btn-secondary" onClick={closePanel}>Cancel</button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

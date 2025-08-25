@@ -2,6 +2,7 @@
     padding: 20px;
     overflow-x: auto;
     background: #fafafa;
+    position: relative;
   }
   .board-loading { padding: 40px; text-align:center; color:#374151; }
   /* Table-like layout */
@@ -28,6 +29,7 @@
     border-bottom: 1px solid #e5e7eb;
     background: #ffffff;
     transition: background 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
   }
   .task-row:hover { background: #f9fafb; box-shadow: inset 0 0 0 1px #e5e7eb; }
   .cell.title { font-weight: 600; color: #111827; }
@@ -49,4 +51,60 @@
   .status-qa { background: #f5f3ff; color:#6d28d9; border-color:#ede9fe; }
   .status-done { background: #ecfdf5; color:#059669; border-color:#d1fae5; }
   .status-reported { background: #fef2f2; color:#b91c1c; border-color:#fee2e2; }
+
+  /* Task detail side panel */
+  .task-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.12);
+    backdrop-filter: blur(1px);
+  }
+  .task-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(560px, 92vw);
+    height: 100vh;
+    background: #ffffff;
+    border-left: 1px solid #e5e7eb;
+    box-shadow: -12px 0 24px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+  }
+  .task-panel-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .task-panel-body {
+    padding: 16px 20px;
+    overflow: auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .task-field {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .task-field label { color:#6b7280; font-weight:600; font-size: 12px; text-transform: uppercase; }
+  .task-input,
+  .task-select,
+  .task-textarea {
+    width:100%;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    background:#ffffff;
+    color:#111827;
+    padding:10px 12px;
+    font-size:14px;
+  }
+  .task-textarea { min-height: 120px; resize: vertical; }
+  .task-panel-footer { padding: 12px 20px; border-top:1px solid #f3f4f6; display:flex; gap:10px; }
+  .btn-primary { background:#111827; color:#fff; border:none; border-radius:10px; padding:10px 12px; }
+  .btn-secondary { background:#ffffff; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; }
   
