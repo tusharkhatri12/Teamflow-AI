@@ -56,7 +56,7 @@ exports.joinOrganization = async (req, res) => {
 exports.getOrganizationDetails = async (req, res) => {
   try {
     const { orgId } = req.params;
-    const org = await Organization.findById(orgId).populate('members', 'name email role');
+    const org = await Organization.findById(orgId).populate('members', 'name email role slackConnected slackUserId');
 
     if (!org) return res.status(404).json({ message: 'Organization not found' });
     res.status(200).json(org);
@@ -123,7 +123,7 @@ exports.getOrganizationMembers = async (req, res) => {
     console.log('User organization:', req.user.organization);
     console.log('User ID:', req.user._id);
     
-    const org = await Organization.findById(req.user.organization).populate('members', 'name email role');
+    const org = await Organization.findById(req.user.organization).populate('members', 'name email role slackConnected slackUserId');
     
     console.log('Found organization:', org);
     
