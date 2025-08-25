@@ -409,6 +409,37 @@ router.get('/slack/callback', async (req, res) => {
   }
 });
 
+// =====================
+// Slack disconnect
+// =====================
+router.post('/slack/disconnect', async (req, res) => {
+  try {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.split(' ')[1] : '';
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.slackUserId = null;
+    user.slackConnected = false;
+    user.slackChannels = [];
+    await user.save();
+
+    return res.json({ success: true });
+  } catch (e) {
+    console.error('Slack disconnect error:', e);
+    return res.status(500).json({ message: 'Failed to disconnect Slack' });
+  }
+});
+
 
 // Get user profile
 router.get('/profile', async (req, res) => {

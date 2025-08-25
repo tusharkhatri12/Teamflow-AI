@@ -209,7 +209,12 @@ const OrganizationPage = ({ user }) => {
         </AnimatePresence>
 
         {organization && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="organization-details">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="organization-details"
+          >
             <h3>
               <Building size={20} />
               Organization Details
@@ -223,7 +228,45 @@ const OrganizationPage = ({ user }) => {
                 <p className="detail-label">Total Members</p>
                 <p className="detail-value">{members.length}</p>
               </motion.div>
+              {user?.role === 'admin' && (
+                <motion.div whileHover={{ scale: 1.02 }} className="detail-card">
+                  <p className="detail-label">Join Code</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <p className="detail-value" style={{ margin: 0 }}>{joinCode || 'Loading…'}</p>
+                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={copyJoinCode} className={`copy-button ${copied ? 'copied' : ''}`}>
+                      {copied ? <Check size={16} /> : <Copy size={16} />}
+                      {copied ? 'Copied' : 'Copy'}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
             </div>
+
+            {currentUserConnected && (
+              <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                {/* Join channel link (replace with your Slack channel URL or deep link) */}
+                <a href={process.env.REACT_APP_SLACK_JOIN_URL || '#'} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'underline', fontWeight: 600 }}>
+                  Join Slack Channel
+                </a>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={async () => {
+                    const token = localStorage.getItem('token');
+                    const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+                    try {
+                      const res = await fetch(`${apiUrl}/auth/slack/disconnect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                      if (res.ok) {
+                        fetchOrganizationData();
+                      }
+                    } catch {}
+                  }}
+                  className="remove-button"
+                >
+                  Disconnect Slack
+                </motion.button>
+              </div>
+            )}
           </motion.div>
         )}
 

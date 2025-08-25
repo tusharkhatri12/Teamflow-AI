@@ -106,7 +106,8 @@ app.post('/test-raw', express.raw({ type: 'application/json' }), (req, res) => {
 // Routes
 app.use('/api', apiRoutes);
 app.use('/slash', slashRouter);
-app.use('/slack', slackRoutes); // Changed from /slack/events to /slack
+app.use('/slack', slackRoutes); // Slack events & helpers
+app.use('/slack/events', slackRoutes); // Compatibility if Slack is pointed here
 app.use('/org', orgRoutes);
 app.use('/api/organizations', orgRoutes);
 const meetingsRoutes = require('./routes/meetings');
