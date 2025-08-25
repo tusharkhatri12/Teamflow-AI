@@ -8,6 +8,14 @@ const Organization = require('../models/Organizations');
 const { sendPasswordResetOTP, sendEmailVerificationOTP } = require('../services/emailService');
 const axios = require('axios');
 
+function base64urlEncode(jsonObj) {
+  const str = JSON.stringify(jsonObj);
+  return Buffer.from(str).toString('base64url');
+}
+function base64urlDecode(str) {
+  return JSON.parse(Buffer.from(str, 'base64url').toString('utf8'));
+}
+
 const router = express.Router();
 
 // Generate OTP
@@ -306,21 +314,24 @@ router.get('/slack', async (req, res) => {
       return res.status(401).send('Missing user token');
     }
 
+    const returnUrl = req.query.return || '';
+
     // Read scopes from env; only include user_scope if explicitly defined
     const appScopes = (process.env.SLACK_OAUTH_SCOPES || 'channels:read,groups:read,channels:join,chat:write').trim();
     const userScopes = (process.env.SLACK_USER_SCOPES || '').trim();
+
+    const state = base64urlEncode({ token, return: returnUrl });
 
     const params = new URLSearchParams({
       client_id: clientId,
       scope: appScopes,
       redirect_uri: redirectUri,
-      state: token
+      state
     });
     if (userScopes.length > 0) {
       params.append('user_scope', userScopes);
     }
 
-    // Use global Slack OAuth v2 endpoint (not workspace URL)
     const url = `https://slack.com/oauth/v2/authorize?${params.toString()}`;
     return res.redirect(url);
   } catch (e) {
@@ -342,10 +353,22 @@ router.get('/slack/callback', async (req, res) => {
       return res.redirect(`${frontendUrl}/?slack=error&reason=missing_params`);
     }
 
-    // Validate and decode our own JWT from state to find user
+    // Decode our state wrapper { token, return }
+    let decodedToken;
+    let returnUrl = '';
+    try {
+      const decodedState = base64urlDecode(state);
+      decodedToken = decodedState.token;
+      returnUrl = decodedState.return || '';
+    } catch (e) {
+      // backwards compatibility: state may be raw JWT
+      decodedToken = state;
+    }
+
+    // Validate and decode our own JWT to find user
     let decoded;
     try {
-      decoded = jwt.verify(state, process.env.JWT_SECRET);
+      decoded = jwt.verify(decodedToken, process.env.JWT_SECRET);
     } catch (e) {
       return res.redirect(`${frontendUrl}/?slack=error&reason=invalid_state`);
     }
@@ -363,8 +386,7 @@ router.get('/slack/callback', async (req, res) => {
       return res.redirect(`${frontendUrl}/?slack=error&reason=exchange_failed`);
     }
 
-    const authedUserId = tokenResp.data.authed_user?.id; // Slack user id
-    // const botToken = tokenResp.data.access_token; // App-level token if needed
+    const authedUserId = tokenResp.data.authed_user?.id;
 
     const user = await User.findById(decoded.id);
     if (!user) {
@@ -375,6 +397,10 @@ router.get('/slack/callback', async (req, res) => {
     user.slackConnected = Boolean(authedUserId);
     await user.save();
 
+    // Redirect back to original page if provided, else FRONTEND_URL
+    if (returnUrl) {
+      return res.redirect(returnUrl);
+    }
     return res.redirect(`${frontendUrl}/?slack=connected`);
   } catch (e) {
     console.error('Slack callback error:', e);
