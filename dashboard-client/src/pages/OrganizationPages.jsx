@@ -165,7 +165,13 @@ const OrganizationPage = ({ user }) => {
 
   const connectSlack = () => {
     const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
-    window.location.href = `${apiUrl}/auth/slack`;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be logged in to connect Slack.');
+      return;
+    }
+    const url = `${apiUrl}/auth/slack?token=${encodeURIComponent(token)}`;
+    window.location.href = url;
   };
 
   const renderSlackBadge = (member) => {
