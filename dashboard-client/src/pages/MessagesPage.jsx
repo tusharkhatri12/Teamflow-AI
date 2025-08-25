@@ -1,44 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, User, Clock, AlertCircle } from 'lucide-react';
+import { MessageCircle, User, Clock, AlertCircle, Filter } from 'lucide-react';
 
 const MessagesPage = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [channels, setChannels] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [selectedChannel, setSelectedChannel] = useState('');
+  const [selectedUser, setSelectedUser] = useState('');
+
+  const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+
+  const loadMessages = async (channel = '', user = '') => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (channel) params.append('channel', channel);
+      if (user) params.append('user', user);
+      const url = `${apiUrl}/slack/messages${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setMessages(data.messages || []);
+        setChannels(data.filters?.channels || []);
+        setUsers(data.filters?.users || []);
+        setError('');
+      } else {
+        setError('Failed to fetch messages');
+      }
+    } catch (e) {
+      setError('Failed to fetch messages');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch('http://localhost:3000/messages')
-      .then(res => res.json())
-      .then(data => {
-        setMessages(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error fetching messages:', err);
-        setError('Failed to fetch messages');
-        setLoading(false);
-      });
+    loadMessages();
+    // eslint-disable-next-line
   }, []);
 
-  if (loading) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        style={{ 
-          padding: '40px', 
-          textAlign: 'center',
-          background: 'rgba(255,255,255,0.95)',
-          borderRadius: '16px',
-          margin: '20px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        }}
-      >
-        <div style={{ fontSize: '18px', color: '#6c757d' }}>Loading messages...</div>
-      </motion.div>
-    );
-  }
+  useEffect(() => {
+    loadMessages(selectedChannel, selectedUser);
+    // eslint-disable-next-line
+  }, [selectedChannel, selectedUser]);
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -58,7 +65,7 @@ const MessagesPage = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{ marginBottom: '32px' }}
+          style={{ marginBottom: '16px' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
             <div style={{
@@ -73,7 +80,7 @@ const MessagesPage = () => {
             }}>
               <MessageCircle size={24} />
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <h1 style={{ 
                 color: '#1a1a1a',
                 margin: 0,
@@ -87,8 +94,23 @@ const MessagesPage = () => {
                 margin: '4px 0 0 0',
                 fontSize: '16px'
               }}>
-                View all team standup messages and updates
+                View and filter team standup messages
               </p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <Filter size={16} color="#6b7280" />
+              <select value={selectedChannel} onChange={(e) => setSelectedChannel(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #e5e7eb' }}>
+                <option value="">All Channels</option>
+                {channels.map((ch) => (
+                  <option key={ch} value={ch}>{ch}</option>
+                ))}
+              </select>
+              <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)} style={{ padding: 8, borderRadius: 8, border: '1px solid #e5e7eb' }}>
+                <option value="">All Users</option>
+                {users.map((u) => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
             </div>
           </div>
         </motion.div>
@@ -104,7 +126,7 @@ const MessagesPage = () => {
                 background: '#fef2f2', 
                 padding: '16px', 
                 borderRadius: '12px', 
-                marginBottom: '24px',
+                marginBottom: '16px',
                 border: '1px solid #fecaca',
                 display: 'flex',
                 alignItems: 'center',
@@ -117,85 +139,69 @@ const MessagesPage = () => {
           )}
         </AnimatePresence>
         
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {messages.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              style={{ 
-                textAlign: 'center',
-                padding: '60px 20px',
-                color: '#6b7280'
-              }}
-            >
-              <MessageCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-              <p style={{ fontSize: '16px', margin: 0 }}>No messages found.</p>
-            </motion.div>
-          ) : (
-            <AnimatePresence>
-              {messages.map((msg, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  style={{ 
-                    background: 'rgba(255,255,255,0.8)',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    border: '1px solid #e5e7eb',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      flexShrink: 0,
-                    }}>
-                      <User size={20} />
-                    </div>
-                    <div style={{ flex: '1' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <p style={{ 
-                          margin: '0', 
-                          fontWeight: '600',
-                          color: '#1a1a1a',
-                          fontSize: '16px'
-                        }}>
-                          {msg.user}
-                        </p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#6b7280', fontSize: '12px' }}>
-                          <Clock size={12} />
-                          {new Date().toLocaleTimeString()}
-                        </div>
-                      </div>
-                      <p style={{ 
-                        margin: '0', 
-                        color: '#374151',
-                        fontSize: '14px',
-                        lineHeight: '1.6',
-                        whiteSpace: 'pre-wrap',
+        {loading ? (
+          <div style={{ textAlign: 'center', color: '#6b7280' }}>Loading messages…</div>
+        ) : (
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {messages.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}
+              >
+                <MessageCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                <p style={{ fontSize: '16px', margin: 0 }}>No messages found.</p>
+              </motion.div>
+            ) : (
+              <AnimatePresence>
+                {messages.map((msg, index) => (
+                  <motion.div
+                    key={msg._id || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.02 * index }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.8)',
+                      borderRadius: '16px',
+                      padding: '16px',
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'white', fontSize: '16px', fontWeight: 600, flexShrink: 0,
                       }}>
-                        {msg.text || 'No message text'}
-                      </p>
+                        <User size={20} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                          <p style={{ margin: 0, fontWeight: 600, color: '#1a1a1a', fontSize: 14 }}>
+                            {msg.user}
+                          </p>
+                          <span style={{ color: '#6b7280', fontSize: 12, border: '1px solid #e5e7eb', padding: '2px 6px', borderRadius: 8 }}>
+                            {msg.channel || 'no-channel'}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#6b7280', fontSize: 12 }}>
+                            <Clock size={12} />
+                            {new Date(msg.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                        <p style={{ margin: 0, color: '#374151', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                          {msg.message}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          )}
-        </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
+          </div>
+        )}
       </motion.div>
     </div>
   );

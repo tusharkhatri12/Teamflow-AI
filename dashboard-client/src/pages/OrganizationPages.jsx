@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Crown, Copy, Check, Trash2, Building, User, Settings } from 'lucide-react';
+import { Users, Crown, Copy, Check, Trash2, Building, User, Settings, Link2, XCircle, CheckCircle2 } from 'lucide-react';
 import './OrganizationPages.css';
 
 const OrganizationPage = ({ user }) => {
@@ -163,6 +163,28 @@ const OrganizationPage = ({ user }) => {
     }
   };
 
+  const connectSlack = () => {
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://teamflow-ai.onrender.com';
+    window.location.href = `${apiUrl}/auth/slack`;
+  };
+
+  const renderSlackBadge = (member) => {
+    const connected = member.slackConnected;
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {connected ? (
+          <span style={{ color: '#16a34a', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+            <CheckCircle2 size={14} /> Slack Connected
+          </span>
+        ) : (
+          <span style={{ color: '#dc2626', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+            <XCircle size={14} /> Slack Not Connected
+          </span>
+        )}
+      </div>
+    );
+  };
+
   console.log('OrganizationPage user:', user);
   
   if (!user) {
@@ -208,13 +230,24 @@ const OrganizationPage = ({ user }) => {
             <div className="organization-icon">
               <Building size={24} />
             </div>
-            <div>
-              <h1 className="organization-title">
-                {user?.role === 'admin' ? 'Organization Management' : 'Organization Details'}
-              </h1>
-              <p className="organization-subtitle">
-                Manage your team and organization settings
-              </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div>
+                <h1 className="organization-title">
+                  {user?.role === 'admin' ? 'Organization Management' : 'Organization Details'}
+                </h1>
+                <p className="organization-subtitle">
+                  Manage your team and organization settings
+                </p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={connectSlack}
+                className="copy-button"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              >
+                <Link2 size={16} /> Connect Slack
+              </motion.button>
             </div>
           </div>
         </motion.div>
@@ -268,41 +301,6 @@ const OrganizationPage = ({ user }) => {
                 </p>
               </motion.div>
             </div>
-            
-            {user?.role === 'admin' && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="join-code-section"
-              >
-                <div className="join-code-content">
-                  <div className="join-code-info">
-                    <p className="join-code-title">
-                      <Copy size={16} />
-                      Organization Join Code
-                    </p>
-                    <div className="join-code-display">
-                      <span className="join-code-text">
-                        {joinCode || 'Loading...'}
-                      </span>
-                    </div>
-                    <p className="join-code-description">
-                      Share this code with employees to let them join your organization
-                    </p>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={copyJoinCode}
-                    className={`copy-button ${copied ? 'copied' : ''}`}
-                  >
-                    {copied ? <Check size={16} /> : <Copy size={16} />}
-                    {copied ? 'Copied!' : 'Copy Code'}
-                  </motion.button>
-                </div>
-              </motion.div>
-            )}
           </motion.div>
         )}
 
@@ -348,6 +346,7 @@ const OrganizationPage = ({ user }) => {
                         <p className="member-email">
                           {member.email}
                         </p>
+                        {renderSlackBadge(member)}
                       </div>
                     </div>
                     <div className="member-actions">

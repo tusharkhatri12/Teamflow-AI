@@ -6,6 +6,7 @@ const { nanoid } = require('nanoid');
 const User = require('../models/User');
 const Organization = require('../models/Organizations');
 const { sendPasswordResetOTP, sendEmailVerificationOTP } = require('../services/emailService');
+const axios = require('axios');
 
 const router = express.Router();
 
@@ -284,6 +285,95 @@ router.get('/google/callback', passport.authenticate('google', { session: false,
   console.log('Redirecting to:', `${process.env.FRONTEND_URL}/login?token=${token}`);
   // You can redirect to your frontend and pass the token as a query param
   res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
+});
+
+// =====================
+// Slack OAuth (User Connect)
+// =====================
+
+// Step 1: Redirect to Slack OAuth
+router.get('/slack', async (req, res) => {
+  try {
+    const clientId = process.env.SLACK_CLIENT_ID;
+    const redirectUri = process.env.SLACK_REDIRECT_URI; // e.g., https://your-api.onrender.com/auth/slack/callback
+    if (!clientId || !redirectUri) {
+      return res.status(500).send('Slack OAuth is not configured');
+    }
+
+    // Identify current app user via JWT (Authorization header) or token query
+    let token = req.headers.authorization?.split(' ')[1] || req.query.token;
+    if (!token) {
+      // Optional: allow anonymous but you'll need state elsewhere
+      return res.status(401).send('Missing user token');
+    }
+
+    const params = new URLSearchParams({
+      client_id: clientId,
+      scope: 'identity.basic,identity.email,channels:read,groups:read,channels:join,chat:write',
+      user_scope: 'identity.basic,identity.email',
+      redirect_uri: redirectUri,
+      state: token
+    });
+    const url = `https://slack.com/oauth/v2/authorize?${params.toString()}`;
+    return res.redirect(url);
+  } catch (e) {
+    console.error('Slack auth start error:', e);
+    return res.status(500).send('Slack auth error');
+  }
+});
+
+// Step 2: Handle Slack OAuth callback
+router.get('/slack/callback', async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    const clientId = process.env.SLACK_CLIENT_ID;
+    const clientSecret = process.env.SLACK_CLIENT_SECRET;
+    const redirectUri = process.env.SLACK_REDIRECT_URI;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    if (!code || !state) {
+      return res.redirect(`${frontendUrl}/?slack=error&reason=missing_params`);
+    }
+
+    // Validate and decode our own JWT from state to find user
+    let decoded;
+    try {
+      decoded = jwt.verify(state, process.env.JWT_SECRET);
+    } catch (e) {
+      return res.redirect(`${frontendUrl}/?slack=error&reason=invalid_state`);
+    }
+
+    // Exchange code for access tokens
+    const tokenResp = await axios.post('https://slack.com/api/oauth.v2.access', new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code: code,
+      redirect_uri: redirectUri
+    }), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+
+    if (!tokenResp.data.ok) {
+      console.error('Slack token exchange failed:', tokenResp.data);
+      return res.redirect(`${frontendUrl}/?slack=error&reason=exchange_failed`);
+    }
+
+    const authedUserId = tokenResp.data.authed_user?.id; // Slack user id
+    // const botToken = tokenResp.data.access_token; // App-level token if needed
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.redirect(`${frontendUrl}/?slack=error&reason=user_not_found`);
+    }
+
+    user.slackUserId = authedUserId || user.slackUserId;
+    user.slackConnected = Boolean(authedUserId);
+    await user.save();
+
+    return res.redirect(`${frontendUrl}/?slack=connected`);
+  } catch (e) {
+    console.error('Slack callback error:', e);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    return res.redirect(`${frontendUrl}/?slack=error`);
+  }
 });
 
 

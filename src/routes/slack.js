@@ -95,13 +95,29 @@ router.post('/summarize', async (req, res) => {
 // Route to get all messages from database
 router.get('/messages', async (req, res) => {
   try {
-    const messages = await StandupMessage.find({ isSummary: false })
+    const { channel, user } = req.query;
+
+    const filter = { isSummary: false };
+    if (channel) filter.channel = channel;
+    if (user) filter.user = user;
+
+    const messages = await StandupMessage.find(filter)
       .sort({ createdAt: -1 })
       .limit(1000); // Increased limit for analytics
-    
+
+    // Get distincts for UI filters
+    const [channels, users] = await Promise.all([
+      StandupMessage.distinct('channel', { isSummary: false }),
+      StandupMessage.distinct('user', { isSummary: false })
+    ]);
+
     res.json({ 
       success: true, 
-      messages 
+      messages,
+      filters: {
+        channels: channels.filter(Boolean),
+        users: users.filter(Boolean)
+      }
     });
   } catch (err) {
     console.error('❌ Error fetching messages:', err.message);

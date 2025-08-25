@@ -7,6 +7,10 @@ const UserSchema = new mongoose.Schema({
   organization: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
   role: { type: String, enum: ['admin', 'employee'], default: 'employee' },
   googleId: { type: String },
+  // Slack connection
+  slackUserId: { type: String, default: null },
+  slackConnected: { type: Boolean, default: false },
+  slackChannels: { type: [String], default: [] },
   // Forgot password fields
   resetPasswordOtp: { type: String },
   resetPasswordOtpExpiry: { type: Date },
