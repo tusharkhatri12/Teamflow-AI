@@ -137,17 +137,59 @@ router.get('/messages', async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(1000);
 
+    // Distinct IDs for filters
     const [channels, users] = await Promise.all([
       StandupMessage.distinct('channel', { isSummary: false }),
       StandupMessage.distinct('user', { isSummary: false })
     ]);
 
+    // Resolve Slack user IDs to names
+    const uniqueUserIds = Array.from(new Set([
+      ...messages.map(m => m.user).filter(Boolean),
+      ...users.filter(Boolean)
+    ]));
+
+    const idToName = {};
+    const botToken = process.env.SLACK_BOT_TOKEN;
+    if (botToken) {
+      for (const uid of uniqueUserIds) {
+        try {
+          const resp = await fetch(`https://slack.com/api/users.info?user=${encodeURIComponent(uid)}`, {
+            headers: { Authorization: `Bearer ${botToken}` }
+          });
+          const data = await resp.json();
+          if (data.ok && data.user) {
+            idToName[uid] = data.user.real_name || data.user.profile?.real_name || data.user.name || uid;
+          } else {
+            idToName[uid] = uid;
+          }
+        } catch {
+          idToName[uid] = uid;
+        }
+      }
+    }
+
+    // Attach display names to messages
+    const messagesWithNames = messages.map(m => ({
+      _id: m._id,
+      user: m.user,
+      userName: idToName[m.user] || m.user,
+      message: m.message,
+      channel: m.channel,
+      isSummary: m.isSummary,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt
+    }));
+
+    // Build user filter list with names
+    const userFilters = users.filter(Boolean).map(uid => ({ id: uid, name: idToName[uid] || uid }));
+
     res.json({ 
       success: true, 
-      messages,
+      messages: messagesWithNames,
       filters: {
         channels: channels.filter(Boolean),
-        users: users.filter(Boolean)
+        users: userFilters
       }
     });
   } catch (err) {
