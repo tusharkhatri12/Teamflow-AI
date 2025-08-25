@@ -1,8 +1,9 @@
 .board-root {
     padding: 20px;
     overflow-x: auto;
+    background: #fafafa;
   }
-  .board-loading { padding: 40px; text-align:center; }
+  .board-loading { padding: 40px; text-align:center; color:#374151; }
   /* Table-like layout */
   .tasks-header, .task-row {
     display: grid;
@@ -11,27 +12,29 @@
     align-items: center;
   }
   .tasks-header {
-    background: #0f0f0f;
-    color: #bfc9d4;
-    padding: 10px 12px;
-    border: 1px solid #2b2b2b;
-    border-radius: 8px 8px 0 0;
+    background: #ffffff;
+    color: #111827;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px 10px 0 0;
     font-weight: 600;
     font-size: 13px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.02);
   }
   .task-row {
-    padding: 8px 12px;
-    border-left: 1px solid #2b2b2b;
-    border-right: 1px solid #2b2b2b;
-    border-bottom: 1px solid #232323;
-    background: #121212;
-    transition: background 0.15s ease;
+    padding: 10px 14px;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
   }
-  .task-row:hover { background: #151922; }
-  .cell.title { font-weight: 600; color: #e5e7eb; }
-  .cell.priority.low { color:#22c55e; }
-  .cell.priority.medium { color:#eab308; }
-  .cell.priority.high { color:#ef4444; }
+  .task-row:hover { background: #f9fafb; box-shadow: inset 0 0 0 1px #e5e7eb; }
+  .cell.title { font-weight: 600; color: #111827; }
+  .cell { color:#374151; font-size: 14px; }
+  .cell.priority.low { color:#16a34a; }
+  .cell.priority.medium { color:#d97706; }
+  .cell.priority.high { color:#dc2626; }
   /* Status pill */
   .status-pill {
     display: inline-block;
@@ -39,11 +42,11 @@
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(17,24,39,0.08);
   }
-  .status-new { background: rgba(99,102,241,0.15); color:#a5b4fc; }
-  .status-inprogress { background: rgba(59,130,246,0.18); color:#93c5fd; }
-  .status-qa { background: rgba(168,85,247,0.18); color:#d8b4fe; }
-  .status-done { background: rgba(34,197,94,0.18); color:#86efac; }
-  .status-reported { background: rgba(239,68,68,0.18); color:#fca5a5; }
+  .status-new { background: #eef2ff; color:#4338ca; border-color:#e0e7ff; }
+  .status-inprogress { background: #eff6ff; color:#1d4ed8; border-color:#dbeafe; }
+  .status-qa { background: #f5f3ff; color:#6d28d9; border-color:#ede9fe; }
+  .status-done { background: #ecfdf5; color:#059669; border-color:#d1fae5; }
+  .status-reported { background: #fef2f2; color:#b91c1c; border-color:#fee2e2; }
   

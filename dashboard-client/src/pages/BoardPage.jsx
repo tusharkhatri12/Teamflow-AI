@@ -174,7 +174,7 @@ const BoardPage = ({ user }) => {
   if (loading) return <div className="board-loading">Loading board…</div>;
   if (!orgId) {
     return (
-      <div className="board-empty" style={{ padding: 24 }}>
+      <div className="board-empty" style={{ padding: 24, color:'#374151' }}>
         Join or create an organization to use the board.
       </div>
     );
@@ -182,17 +182,17 @@ const BoardPage = ({ user }) => {
   if (!board) {
     return (
       <div className="board-empty" style={{ padding: 24 }}>
-        <div style={{ marginBottom: 12 }}>No board found for this organization.</div>
-        {error && <div style={{ color: '#ef4444', marginBottom: 12 }}>{error}</div>}
+        <div style={{ marginBottom: 12, color:'#374151' }}>No board found for this organization.</div>
+        {error && <div style={{ color: '#dc2626', marginBottom: 12 }}>{error}</div>}
         <button
           onClick={createDefaultBoard}
           disabled={creating}
           style={{
             padding: '10px 14px',
-            background: '#4f46e5',
+            background: '#111827',
             color: '#fff',
             border: 'none',
-            borderRadius: 8,
+            borderRadius: 10,
             cursor: creating ? 'not-allowed' : 'pointer'
           }}
         >
@@ -207,18 +207,18 @@ const BoardPage = ({ user }) => {
   return (
     <div className="board-root">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Board</h2>
+        <h2 style={{ margin: 0, color:'#111827' }}>Board</h2>
         {isAdmin ? (
           <div style={{ marginLeft: 'auto' }}>
-            <label style={{ marginRight: 8, color: '#bfc9d4' }}>View tasks for:</label>
+            <label style={{ marginRight: 8, color: '#6b7280' }}>View tasks for:</label>
             <select
               value={selectedAssignee}
               onChange={(e) => setSelectedAssignee(e.target.value)}
               style={{
-                background: '#0f0f0f',
-                color: '#fff',
-                border: '1px solid #2b2b2b',
-                borderRadius: 8,
+                background: '#ffffff',
+                color: '#111827',
+                border: '1px solid #e5e7eb',
+                borderRadius: 10,
                 padding: '8px 10px',
                 minWidth: 200
               }}
@@ -228,15 +228,15 @@ const BoardPage = ({ user }) => {
                 <option key={m.id} value={m.id}>{m.name}</option>
               ))}
             </select>
-            <label style={{ margin: '0 8px 0 16px', color: '#bfc9d4' }}>Sprint:</label>
+            <label style={{ margin: '0 8px 0 16px', color: '#6b7280' }}>Sprint:</label>
             <select
               value={selectedSprint}
               onChange={(e) => setSelectedSprint(e.target.value)}
               style={{
-                background: '#0f0f0f',
-                color: '#fff',
-                border: '1px solid #2b2b2b',
-                borderRadius: 8,
+                background: '#ffffff',
+                color: '#111827',
+                border: '1px solid #e5e7eb',
+                borderRadius: 10,
                 padding: '8px 10px',
                 minWidth: 180
               }}
@@ -248,7 +248,7 @@ const BoardPage = ({ user }) => {
             </select>
             <button
               onClick={() => setCreatingSprint(v => !v)}
-              style={{ marginLeft: 12, padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#bfc9d4' }}
+              style={{ marginLeft: 12, padding: '8px 10px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#ffffff', color: '#374151' }}
             >
               {creatingSprint ? 'Close' : 'New Sprint'}
             </button>
@@ -259,40 +259,40 @@ const BoardPage = ({ user }) => {
                   placeholder="Sprint name"
                   value={newSprint.name}
                   onChange={e => setNewSprint(s => ({ ...s, name: e.target.value }))}
-                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+                  style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#ffffff', color: '#111827' }}
                 />
                 <input
                   type="date"
                   value={newSprint.startDate}
                   onChange={e => setNewSprint(s => ({ ...s, startDate: e.target.value }))}
-                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+                  style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#ffffff', color: '#111827' }}
                 />
                 <input
                   type="date"
                   value={newSprint.endDate}
                   onChange={e => setNewSprint(s => ({ ...s, endDate: e.target.value }))}
-                  style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+                  style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid #e5e7eb', background: '#ffffff', color: '#111827' }}
                 />
-                <label style={{ color: '#bfc9d4', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <label style={{ color: '#374151', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   <input
                     type="checkbox"
                     checked={!!newSprint.active}
                     onChange={e => setNewSprint(s => ({ ...s, active: e.target.checked }))}
                   /> Active
                 </label>
-                <button onClick={createSprint} style={{ padding: '8px 10px', borderRadius: 8, background: '#4f46e5', color: '#fff', border: 'none' }}>Create</button>
+                <button onClick={createSprint} style={{ padding: '8px 10px', borderRadius: 10, background: '#111827', color: '#fff', border: 'none' }}>Create</button>
               </div>
             )}
           </div>
         ) : (
-          <div style={{ marginLeft: 'auto', color: '#9aa3af' }}>Viewing your tasks</div>
+          <div style={{ marginLeft: 'auto', color: '#6b7280' }}>Viewing your tasks</div>
         )}
       </div>
       {/* Toolbar */}
       <div style={{ display:'flex', alignItems:'center', gap:12, margin:'10px 0 6px 0' }}>
-        <button style={{ padding:'6px 10px', borderRadius:8, border:'1px solid #2b2b2b', background:'#0f0f0f', color:'#bfc9d4' }}>Filter</button>
-        <button style={{ padding:'6px 10px', borderRadius:8, border:'1px solid #2b2b2b', background:'#0f0f0f', color:'#bfc9d4' }}>Group by</button>
-        <button style={{ padding:'6px 10px', borderRadius:8, border:'1px solid #2b2b2b', background:'#0f0f0f', color:'#bfc9d4' }}>Hide Columns</button>
+        <button style={{ padding:'6px 10px', borderRadius:10, border:'1px solid #e5e7eb', background:'#ffffff', color:'#374151' }}>Filter</button>
+        <button style={{ padding:'6px 10px', borderRadius:10, border:'1px solid #e5e7eb', background:'#ffffff', color:'#374151' }}>Group by</button>
+        <button style={{ padding:'6px 10px', borderRadius:10, border:'1px solid #e5e7eb', background:'#ffffff', color:'#374151' }}>Hide Columns</button>
       </div>
 
       {/* Table Header */}
@@ -312,43 +312,40 @@ const BoardPage = ({ user }) => {
             placeholder="New task title..."
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }}
+            style={{ width: '100%', padding: 8, borderRadius: 10, border: '1px solid #e5e7eb', background: '#ffffff', color: '#111827' }}
           />
         </span>
         <span className="cell assignee">
-          <select value={newAssigneeId} onChange={e => setNewAssigneeId(e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
+          <select value={newAssigneeId} onChange={e => setNewAssigneeId(e.target.value)} style={{ width: '100%', background: '#ffffff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: 10 }}>
             <option value="">Unassigned</option>
             {members.map(m => (<option key={m.id} value={m.id}>{m.name}</option>))}
           </select>
         </span>
         <span className="cell created-by" />
         <span className="cell sprint">
-          <select value={newSprintId} onChange={e => setNewSprintId(e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
+          <select value={newSprintId} onChange={e => setNewSprintId(e.target.value)} style={{ width: '100%', background: '#ffffff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: 10 }}>
             <option value="">No sprint</option>
             {sprints.map(s => (<option key={s._id} value={s._id}>{s.name}</option>))}
           </select>
         </span>
         <span className="cell labels">
-          <input type="text" placeholder="labels (comma separated)" value={newLabels} onChange={e => setNewLabels(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #2b2b2b', background: '#0f0f0f', color: '#fff' }} />
+          <input type="text" placeholder="labels (comma separated)" value={newLabels} onChange={e => setNewLabels(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 10, border: '1px solid #e5e7eb', background: '#ffffff', color: '#111827' }} />
         </span>
         <span className="cell priority">
-          <select value={newPriority} onChange={e => setNewPriority(e.target.value)} style={{ width: '100%', background: '#0f0f0f', color: '#fff', border: '1px solid #2b2b2b', borderRadius: 6 }}>
+          <select value={newPriority} onChange={e => setNewPriority(e.target.value)} style={{ width: '100%', background: '#ffffff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: 10 }}>
             <option value="low">Low</option>
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
         </span>
         <span className="cell status">
-          <button onClick={addTask} style={{ padding: '8px 10px', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 6, width: '100%' }}>Add</button>
+          <button onClick={addTask} style={{ padding: '8px 10px', background: '#111827', color: '#fff', border: 'none', borderRadius: 10, width: '100%' }}>Add</button>
         </span>
       </div>
 
       {/* Tasks Table Rows */}
       {board.columns.length > 0 && (
-        board.columns.reduce((rows, col) => {
-          col.taskIds.forEach(id => rows.push(id));
-          return rows;
-        }, []).map(taskId => {
+        board.columns.reduce((rows, col) => { col.taskIds.forEach(id => rows.push(id)); return rows; }, []).map(taskId => {
           const task = board.tasks.find(t => t._id === taskId);
           if (!task) return null;
           const assigneeName = members.find(m => String(m.id) === String(task.assigneeId))?.name || '';
@@ -364,7 +361,6 @@ const BoardPage = ({ user }) => {
               <span className="cell labels">{(task.labels || []).join(', ')}</span>
               <span className={`cell priority ${task.priority}`}>{task.priority}</span>
               <span className="cell status">
-                {/* status pill with inline select on click */}
                 <div style={{ position:'relative' }}>
                   <span className={`status-pill ${
                     currentColumn?.title === 'New' ? 'status-new' :
@@ -375,13 +371,15 @@ const BoardPage = ({ user }) => {
                   }`}>
                     {currentColumn?.title || 'New'}
                   </span>
-                  <select aria-label="Change status" value={currentColumn?.id || ''} onChange={e => moveTaskToColumn(task._id, e.target.value)} style={{ position:'absolute', inset:0, opacity:0, cursor:'pointer' }}>
-                    {['New', 'In Progress', 'Moved to QA', 'Done', 'Reported'].map(statusTitle => {
-                      const col = board.columns.find(c => c.title === statusTitle) || board.columns[0];
-                      return (
-                        <option key={statusTitle} value={col.id}>{statusTitle}</option>
-                      );
-                    })}
+                  <select
+                    aria-label="Change status"
+                    value={currentColumn?.id || ''}
+                    onChange={e => moveTaskToColumn(task._id, e.target.value)}
+                    style={{ position:'absolute', inset:0, opacity:0, cursor:'pointer', zIndex: 10 }}
+                  >
+                    {board.columns.map(col => (
+                      <option key={col.id} value={col.id}>{col.title}</option>
+                    ))}
                   </select>
                 </div>
               </span>
