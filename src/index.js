@@ -61,6 +61,25 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Server is running' });
 });
 
+// Test database route
+app.get('/test-db', async (req, res) => {
+  try {
+    const StandupMessage = require('./models/StandupMessage');
+    const count = await StandupMessage.countDocuments();
+    res.json({ 
+      message: 'Database connection successful', 
+      messageCount: count,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Database test failed:', err);
+    res.status(500).json({ 
+      message: 'Database connection failed', 
+      error: err.message 
+    });
+  }
+});
+
 // Simple POST test route
 app.post('/test-post', (req, res) => {
   console.log('Test POST hit');
@@ -83,7 +102,7 @@ app.post('/test-raw', express.raw({ type: 'application/json' }), (req, res) => {
 // Routes
 app.use('/api', apiRoutes);
 app.use('/slash', slashRouter);
-app.use('/slack/events', slackRoutes);
+app.use('/slack', slackRoutes); // Changed from /slack/events to /slack
 app.use('/org', orgRoutes);
 app.use('/api/organizations', orgRoutes);
 

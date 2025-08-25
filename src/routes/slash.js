@@ -1,36 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const {summarizeText} = require('../services/summaryService');
-const fs = require('fs');
-const path = require('path');
-
-const standupsPath = path.join(__dirname, '../../data/standups.json');
+const { summarizeText } = require('../services/summaryService');
+const StandupMessage = require('../models/StandupMessage');
 
 router.post('/', async (req, res) => {
   const { user_name, channel_id, text } = req.body;
 
   console.log(`🚀 Slash command /summarize triggered by ${user_name}`);
 
-  // Load messages from JSON
-  let standups = [];
   try {
-    const data = fs.readFileSync(standupsPath, 'utf8');
-    standups = JSON.parse(data);
-  } catch (err) {
-    console.error('❌ Error reading standups.json:', err.message);
-  }
+    // ✅ Fetch all standups from MongoDB (you can filter by channel_id if needed)
+    const standups = await StandupMessage.find({ isSummary: false }).sort({ createdAt: 1 });
 
-  if (!standups.length) {
-    return res.json({
-      response_type: 'ephemeral',
-      text: '⚠️ No messages found to summarize.'
-    });
-  }
+    if (!standups.length) {
+      return res.json({
+        response_type: 'ephemeral',
+        text: '⚠️ No messages found to summarize.'
+      });
+    }
 
-  const formatted = standups.map(s => `${s.user}: ${s.message}`).join('\n');
-
-  try {
-    const summary = await summarizeText(formatted);
+    // Generate summary with AI using the database data
+    const summary = await summarizeText();
 
     return res.json({
       response_type: 'in_channel',
