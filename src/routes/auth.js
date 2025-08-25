@@ -303,17 +303,24 @@ router.get('/slack', async (req, res) => {
     // Identify current app user via JWT (Authorization header) or token query
     let token = req.headers.authorization?.split(' ')[1] || req.query.token;
     if (!token) {
-      // Optional: allow anonymous but you'll need state elsewhere
       return res.status(401).send('Missing user token');
     }
 
+    // Read scopes from env; only include user_scope if explicitly defined
+    const appScopes = (process.env.SLACK_OAUTH_SCOPES || 'channels:read,groups:read,channels:join,chat:write').trim();
+    const userScopes = (process.env.SLACK_USER_SCOPES || '').trim();
+
     const params = new URLSearchParams({
       client_id: clientId,
-      scope: 'identity.basic,identity.email,channels:read,groups:read,channels:join,chat:write',
-      user_scope: 'identity.basic,identity.email',
+      scope: appScopes,
       redirect_uri: redirectUri,
       state: token
     });
+    if (userScopes.length > 0) {
+      params.append('user_scope', userScopes);
+    }
+
+    // Use global Slack OAuth v2 endpoint (not workspace URL)
     const url = `https://slack.com/oauth/v2/authorize?${params.toString()}`;
     return res.redirect(url);
   } catch (e) {
