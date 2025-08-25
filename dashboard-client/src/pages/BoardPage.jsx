@@ -239,6 +239,14 @@ const BoardPage = ({ user }) => {
 
   const isAdmin = user?.role === 'admin' || user?.role === 'owner';
 
+  // helper to render chip class
+  const statusClass = (title) => (
+    title === 'Done' ? 'status-done' :
+    title === 'In Progress' ? 'status-inprogress' :
+    title === 'Moved to QA' ? 'status-qa' :
+    title === 'Reported' ? 'status-reported' : 'status-new'
+  );
+
   return (
     <div className="board-root">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -340,7 +348,7 @@ const BoardPage = ({ user }) => {
         <span className="cell priority">Priority</span>
         <span className="cell status">Status</span>
       </div>
-      <div className="task-row">
+      <div className="task-row new-task">
         <span className="cell title">
           <input
             type="text"
@@ -390,20 +398,23 @@ const BoardPage = ({ user }) => {
           return (
             <div className="task-row" key={task._id} onClick={(e)=>{ if(e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') openPanel(task); }}>
               <span className="cell title">{task.title}</span>
-              <span className="cell assignee">{assigneeName}</span>
+              <span className="cell assignee">
+                <span className="avatar-initial">{(assigneeName||'U').slice(0,1).toUpperCase()}</span>
+                {assigneeName}
+              </span>
               <span className="cell created-by">{createdByName}</span>
               <span className="cell sprint">{sprintName}</span>
-              <span className="cell labels">{(task.labels || []).join(', ')}</span>
+              <span className="cell labels">
+                <div className="tag-list">
+                  {(task.labels || []).map(lb => (
+                    <span key={lb} className="tag-chip">{lb}</span>
+                  ))}
+                </div>
+              </span>
               <span className={`cell priority ${task.priority}`}>{task.priority}</span>
               <span className="cell status">
                 <div style={{ position:'relative' }}>
-                  <span className={`status-pill ${
-                    currentColumn?.title === 'New' ? 'status-new' :
-                    currentColumn?.title === 'In Progress' ? 'status-inprogress' :
-                    currentColumn?.title === 'Moved to QA' ? 'status-qa' :
-                    currentColumn?.title === 'Done' ? 'status-done' :
-                    'status-reported'
-                  }`}>
+                  <span className={`status-pill ${statusClass(currentColumn?.title)}`}>
                     {currentColumn?.title || 'New'}
                   </span>
                   <select aria-label="Change status" value={currentColumn?.id || ''} onChange={e => moveTaskToColumn(task._id, e.target.value)} style={{ position:'absolute', inset:0, opacity:0, cursor:'pointer', zIndex: 10 }}>
@@ -468,6 +479,11 @@ const BoardPage = ({ user }) => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Footer Count */}
+      {board.columns.length > 0 && (
+        <div className="board-footer">count {board.columns.reduce((n,c)=>n+c.taskIds.length,0)}</div>
       )}
     </div>
   );

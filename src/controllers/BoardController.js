@@ -1,18 +1,55 @@
 // backend/controllers/boardController.js
 const Board = require('../models/Board');
 const { nanoid } = require('nanoid'); // npm i nanoid
+const axios = require('axios');
 
-// Get board by orgId, optionally filtered by assigneeId
+async function callLLM(prompt) {
+  // Prefer Groq
+  if (process.env.GROQ_API_KEY) {
+    try {
+      const resp = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+        model: 'llama3-70b-8192',
+        messages: [
+          { role: 'system', content: 'You produce concise, helpful outputs.' },
+          { role: 'user', content: prompt }
+        ]
+      }, {
+        headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` }
+      });
+      return resp.data.choices?.[0]?.message?.content?.trim();
+    } catch {}
+  }
+  // Fall back to OpenAI
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const OpenAI = require('openai');
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const resp = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You produce concise, helpful outputs.' },
+          { role: 'user', content: prompt }
+        ]
+      });
+      return resp.choices?.[0]?.message?.content?.trim();
+    } catch {}
+  }
+  return null;
+}
+
+// Get board by orgId (and optional projectId), optionally filtered by assigneeId
 exports.getBoardByOrg = async (req, res) => {
   try {
     const { orgId } = req.params;
-    const { assigneeId, sprintId } = req.query;
+    const { assigneeId, sprintId, projectId } = req.query;
     const userOrgId = req.user?.organization?._id || req.user?.organization;
     if (String(userOrgId) !== String(orgId)) {
       return res.status(403).json({ message: 'Forbidden: Not a member of this organization' });
     }
 
-    const board = await Board.findOne({ orgId });
+    const findQuery = { orgId };
+    if (projectId) findQuery.projectId = projectId;
+    const board = await Board.findOne(findQuery);
     if (!board) return res.status(404).json({ message: 'Board not found' });
 
     const isAdmin = req.user?.role === 'admin' || req.user?.role === 'owner';
@@ -48,13 +85,13 @@ exports.getBoardByOrg = async (req, res) => {
 // Create default board for org (idempotent: returns existing if present)
 exports.createBoard = async (req, res) => {
   try {
-    const { orgId, name } = req.body;
+    const { orgId, name, projectId, projectName } = req.body;
     if (!orgId) {
       return res.status(400).json({ message: 'orgId is required' });
     }
 
     // If a board already exists for this org, return it
-    const existing = await Board.findOne({ orgId });
+    const existing = await Board.findOne({ orgId, ...(projectId ? { projectId } : {}) });
     if (existing) {
       return res.status(200).json(existing);
     }
@@ -70,6 +107,8 @@ exports.createBoard = async (req, res) => {
 
     const board = new Board({
       orgId,
+      projectId: projectId || undefined,
+      projectName: projectName || undefined,
       name: name || 'Main Board',
       sprints: [],
       columns: defaultColumns,
@@ -349,5 +388,78 @@ exports.deleteComment = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// List all tasks for a project (across its board)
+exports.listProjectTasks = async (req, res) => {
+  try {
+    const { orgId } = req.params;
+    const { projectId, sprintId } = req.query;
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(userOrgId) !== String(orgId)) return res.status(403).json({ message: 'Forbidden' });
+    const board = await Board.findOne({ orgId, ...(projectId ? { projectId } : {}) });
+    if (!board) return res.json({ tasks: [] });
+    const tasks = (board.tasks || []).filter(t => sprintId ? String(t.sprintId || '') === String(sprintId) : true);
+    res.json({ tasks });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// AI: Suggest sprint goals from tasks (optionally for active sprint)
+exports.suggestGoals = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ message: 'Board not found' });
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) return res.status(403).json({ message: 'Forbidden' });
+
+    const activeSprint = board.sprints?.find(s => s.active);
+    const tasks = board.tasks.filter(t => !activeSprint ? true : String(t.sprintId || '') === String(activeSprint._id || ''));
+    const taskLines = tasks.map(t => `- [${t.priority}] ${t.title}${t.labels?.length ? ` (${t.labels.join(', ')})` : ''}`).join('\n');
+    const prompt = `You are an agile coach. Given the following tasks, propose 3-5 concise sprint goals (bullet list). Keep goals outcome-oriented, not task lists.\n\nTasks:\n${taskLines}\n\nSprint goals:`;
+
+    const content = await callLLM(prompt);
+    if (!content) {
+      // naive fallback: pick top priorities
+      const top = tasks.filter(t => t.priority === 'high').slice(0, 5).map(t => `Deliver: ${t.title}`);
+      return res.json({ goals: top.length ? top : ['Improve delivery of top priorities', 'Reduce blockers', 'Ship at least one customer-visible improvement'] });
+    }
+    const goals = content.split('\n').map(l => l.replace(/^[-*]\s?/, '').trim()).filter(Boolean);
+    return res.json({ goals });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to suggest goals' });
+  }
+};
+
+// AI: Summarize sprint progress
+exports.summarizeProgress = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ message: 'Board not found' });
+    const userOrgId = req.user?.organization?._id || req.user?.organization;
+    if (String(board.orgId) !== String(userOrgId)) return res.status(403).json({ message: 'Forbidden' });
+
+    const cols = board.columns;
+    const counts = Object.fromEntries(cols.map(c => [c.title, c.taskIds.length]));
+    const tasksMap = new Map(board.tasks.map(t => [t._id, t]));
+    const doneTasks = (cols.find(c => c.title === 'Done')?.taskIds || []).map(id => tasksMap.get(id)?.title).filter(Boolean);
+    const inProgress = (cols.find(c => c.title === 'In Progress')?.taskIds || []).map(id => tasksMap.get(id)?.title).filter(Boolean);
+    const prompt = `Summarize sprint progress in 3-6 concise bullets. Mention totals per column and highlight recently completed work.\n\nCounts per column: ${JSON.stringify(counts)}\nDone: ${doneTasks.join('; ')}\nIn Progress: ${inProgress.join('; ')}`;
+    const content = await callLLM(prompt);
+    if (!content) {
+      const bullets = [
+        `Done: ${counts['Done'] || 0} tasks`,
+        `In Progress: ${counts['In Progress'] || 0} tasks`,
+        `New: ${counts['New'] || 0}, QA: ${counts['Moved to QA'] || 0}, Reported: ${counts['Reported'] || 0}`
+      ];
+      return res.json({ summary: bullets.join('\n') });
+    }
+    return res.json({ summary: content });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to summarize progress' });
   }
 };

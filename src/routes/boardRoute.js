@@ -30,4 +30,11 @@ router.post('/:boardId/sprints', boardCtrl.createSprint);
 router.get('/:boardId/sprints', boardCtrl.listSprints);
 router.patch('/:boardId/sprints/:sprintId', boardCtrl.updateSprint);
 
+// AI helpers
+router.get('/:boardId/ai/suggest-goals', boardCtrl.suggestGoals);
+router.get('/:boardId/ai/summarize', boardCtrl.summarizeProgress);
+
+// All tasks across a project
+router.get('/:orgId/project-tasks', boardCtrl.listProjectTasks);
+
 module.exports = router;

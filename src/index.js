@@ -8,6 +8,7 @@ const slackRoutes = require('./routes/slack');
 const slashRouter = require('./routes/slash');
 const authRoutes = require('./routes/auth');
 const orgRoutes = require('./routes/org');
+const projectRoutes = require('./routes/projectRoutes');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
@@ -110,6 +111,7 @@ app.use('/slack', slackRoutes); // Slack events & helpers
 app.use('/slack/events', slackRoutes); // Compatibility if Slack is pointed here
 app.use('/org', orgRoutes);
 app.use('/api/organizations', orgRoutes);
+app.use('/api/projects', projectRoutes);
 const meetingsRoutes = require('./routes/meetings');
 app.use('/api/meetings', meetingsRoutes);
 

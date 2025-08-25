@@ -51,6 +51,15 @@
   .status-qa { background: #f5f3ff; color:#6d28d9; border-color:#ede9fe; }
   .status-done { background: #ecfdf5; color:#059669; border-color:#d1fae5; }
   .status-reported { background: #fef2f2; color:#b91c1c; border-color:#fee2e2; }
+  .status-pill::before { content: '•'; margin-right: 6px; }
+  .tag-list { display:flex; flex-wrap: wrap; gap:6px; }
+  .tag-chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:4px 8px; border-radius:999px; border:1px solid #e5e7eb;
+    background:#f3f4f6; color:#374151; font-size:12px; font-weight:600;
+  }
+  .avatar-initial { width:22px; height:22px; border-radius:50%; background:#111827; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; margin-right:8px; }
+  .board-footer { padding:10px 2px; color:#6b7280; font-size:12px; }
 
   /* Task detail side panel */
   .task-panel-overlay {
@@ -107,4 +116,8 @@
   .task-panel-footer { padding: 12px 20px; border-top:1px solid #f3f4f6; display:flex; gap:10px; }
   .btn-primary { background:#111827; color:#fff; border:none; border-radius:10px; padding:10px 12px; }
   .btn-secondary { background:#ffffff; color:#374151; border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; }
+  .task-row.new-task { position: relative; z-index: 1; }
+  .task-row { position: relative; z-index: 0; }
+  /* ensure subsequent rows' interactive controls are above the input row */
+  .task-row + .task-row { z-index: 2; }
   

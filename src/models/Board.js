@@ -30,6 +30,8 @@ const ColumnSchema = new mongoose.Schema({
 
 const BoardSchema = new mongoose.Schema({
   orgId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
+  projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: false },
+  projectName: { type: String },
   name: { type: String, default: 'Main Board' },
   sprints: [{
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
